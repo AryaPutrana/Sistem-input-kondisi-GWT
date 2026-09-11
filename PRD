@@ -1,0 +1,934 @@
+PRODUCT REQUIREMENT DOCUMENT (PRD)
+SISTEM MONITORING KONDISI GWT DAN KOLAM AIR BERSIH BERBASIS WEB
+
+Versi Dokumen: 1.0
+Status: Draft Perancangan
+Platform: Web Responsive
+Framework: Laravel 10
+Database: MySQL
+Frontend: Blade Template, Bootstrap 5, JavaScript
+Pengguna: Petugas Sarana dan Prasarana dan Admin/Pengelola
+
+1. INFORMASI DOKUMEN
+Informasi	Keterangan
+Nama Produk	Sistem Monitoring Kondisi GWT dan Kolam Air Bersih
+Jenis Sistem	Sistem Informasi Berbasis Web
+Platform	Web Responsive
+Framework	Laravel 10
+Database	MySQL
+Frontend	Blade, Bootstrap 5, JavaScript
+Target Pengguna	Petugas Sarpras dan Admin/Pengelola
+Versi	1.0
+2. LATAR BELAKANG
+
+GWT (Ground Water Tank) dan kolam air bersih merupakan salah satu fasilitas penting dalam mendukung ketersediaan dan distribusi air di lingkungan rumah susun. Untuk memastikan kondisi air tetap terpantau, petugas Sarana dan Prasarana melakukan pemeriksaan secara rutin sebanyak tiga kali dalam satu hari.
+
+Pada saat melakukan pemeriksaan, petugas perlu mengetahui kondisi aktual air dan mencatat hasil pemeriksaan. Informasi yang dicatat meliputi dokumentasi foto, keterangan hasil pemeriksaan, serta kondisi yang ditemukan di lapangan.
+
+Kondisi hasil pemeriksaan dapat berupa:
+
+Normal
+Debit Turun
+Tekanan Air Kecil
+
+Apabila proses pencatatan masih dilakukan secara manual, data hasil pemeriksaan akan lebih sulit untuk ditelusuri kembali, didokumentasikan, dan dipantau secara terpusat.
+
+Oleh karena itu, diperlukan sebuah sistem informasi berbasis web yang dapat digunakan untuk mendigitalisasi proses monitoring GWT dan kolam air bersih.
+
+Sistem ini memungkinkan petugas melakukan pencatatan hasil pemeriksaan secara langsung melalui website menggunakan perangkat komputer, laptop, tablet, maupun smartphone.
+
+Data hasil pemeriksaan kemudian disimpan dalam database sehingga dapat digunakan sebagai histori monitoring dan membantu pengelola mengetahui kondisi air secara lebih terstruktur.
+
+3. PERMASALAHAN
+
+Beberapa permasalahan yang ingin diselesaikan melalui sistem ini adalah:
+
+Pencatatan hasil pemeriksaan kondisi air masih dapat dilakukan secara manual.
+Dokumentasi foto pemeriksaan belum tersimpan dalam sistem yang terpusat.
+Data hasil pemeriksaan sulit ditelusuri kembali apabila diperlukan.
+Pengelola kesulitan melihat histori kondisi GWT dan kolam air bersih.
+Kondisi tidak normal seperti debit turun atau tekanan air kecil tidak langsung terlihat dalam satu dashboard monitoring.
+Tidak terdapat sistem terpusat untuk mengetahui hasil pemeriksaan berdasarkan tanggal, waktu, lokasi, dan kondisi.
+Data pemeriksaan belum dimanfaatkan secara optimal sebagai histori kondisi fasilitas.
+4. TUJUAN SISTEM
+
+Sistem ini dibuat dengan tujuan:
+
+4.1 Digitalisasi Pencatatan
+
+Mengubah proses pencatatan hasil pemeriksaan GWT dan kolam air bersih dari pencatatan manual menjadi pencatatan digital.
+
+4.2 Dokumentasi Pemeriksaan
+
+Menyediakan fasilitas untuk menyimpan foto sebagai dokumentasi kondisi GWT dan kolam air bersih.
+
+4.3 Penyimpanan Histori
+
+Menyimpan seluruh hasil pemeriksaan sehingga dapat dilihat kembali berdasarkan tanggal, waktu, lokasi, dan kondisi.
+
+4.4 Monitoring Kondisi
+
+Membantu petugas dan admin mengetahui kondisi air berdasarkan hasil pemeriksaan lapangan.
+
+4.5 Identifikasi Kondisi Tidak Normal
+
+Memberikan penanda atau peringatan ketika petugas memilih kondisi:
+
+Debit Turun
+Tekanan Air Kecil
+4.6 Monitoring Terpusat
+
+Menyediakan dashboard untuk menampilkan kondisi monitoring air secara terpusat.
+
+5. MANFAAT SISTEM
+
+Sistem diharapkan memberikan manfaat sebagai berikut:
+
+5.1 Bagi Petugas Sarpras
+Mempermudah pencatatan hasil pemeriksaan.
+Mengurangi kebutuhan pencatatan manual.
+Mempermudah dokumentasi foto.
+Mempermudah melihat hasil pemeriksaan sebelumnya.
+Dapat melakukan pencatatan melalui smartphone.
+5.2 Bagi Admin/Pengelola
+Mempermudah pemantauan kondisi air.
+Mempermudah melihat histori pemeriksaan.
+Mempermudah menemukan pemeriksaan dengan kondisi tidak normal.
+Mempermudah melihat dokumentasi foto.
+Memiliki data monitoring yang lebih terstruktur.
+5.3 Bagi Pengelolaan Sarpras
+Menyediakan data historis kondisi air.
+Membantu proses evaluasi kondisi fasilitas.
+Menjadi dasar untuk tindak lanjut apabila ditemukan kondisi tidak normal.
+6. RUANG LINGKUP SISTEM
+6.1 Ruang Lingkup Utama
+
+Sistem mencakup:
+
+Login pengguna.
+Manajemen pengguna.
+Manajemen lokasi monitoring.
+Pencatatan monitoring GWT.
+Pencatatan monitoring kolam air bersih.
+Pencatatan tiga kali pemeriksaan dalam satu hari.
+Upload foto hasil pemeriksaan.
+Input keterangan pemeriksaan.
+Pemilihan kondisi pemeriksaan.
+Penyimpanan data monitoring.
+Histori monitoring.
+Filter data monitoring.
+Detail hasil pemeriksaan.
+Dashboard monitoring.
+Peringatan kondisi tidak normal.
+7. BATASAN SISTEM VERSI 1.0
+
+Pada versi pertama, sistem tidak menggunakan sensor IoT.
+
+Sistem tidak melakukan pengukuran debit air atau tekanan air secara otomatis.
+
+Hasil kondisi:
+
+Normal
+Debit Turun
+Tekanan Air Kecil
+
+ditentukan berdasarkan hasil pemeriksaan langsung oleh petugas di lapangan.
+
+Sistem berfungsi sebagai media digital untuk pencatatan, dokumentasi, penyimpanan, dan monitoring hasil pemeriksaan.
+
+8. AKTOR SISTEM
+8.1 Petugas Sarana dan Prasarana
+
+Petugas merupakan pengguna yang melakukan pemeriksaan langsung di lapangan.
+
+Hak akses:
+
+Login.
+Melihat monitoring.
+Melakukan input pemeriksaan.
+Memilih lokasi.
+Memilih waktu/sesi pemeriksaan.
+Mengupload foto.
+Mengisi keterangan.
+Memilih kondisi.
+Menyimpan hasil pemeriksaan.
+Melihat histori pemeriksaan.
+8.2 Admin/Pengelola
+
+Admin merupakan pengguna yang melakukan monitoring dan pengelolaan sistem.
+
+Hak akses:
+
+Login.
+Melihat dashboard.
+Melihat seluruh data monitoring.
+Melihat detail pemeriksaan.
+Melakukan filter data.
+Melihat kondisi tidak normal.
+Melihat dokumentasi foto.
+Mengelola lokasi monitoring.
+Mengelola pengguna/petugas.
+9. PROSES BISNIS
+
+Pemeriksaan dilakukan sebanyak tiga kali dalam satu hari.
+
+Secara umum prosesnya:
+
+Petugas
+   ↓
+Datang ke lokasi
+   ↓
+Melakukan pemeriksaan GWT/Kolam Air Bersih
+   ↓
+Mengambil foto
+   ↓
+Menentukan kondisi
+   ↓
+Mengisi keterangan
+   ↓
+Input ke website
+   ↓
+Simpan
+   ↓
+Data masuk database
+   ↓
+Dashboard Monitoring
+
+Proses tersebut dilakukan sebanyak tiga kali dalam satu hari sesuai jadwal pemeriksaan yang berlaku.
+
+10. JADWAL PEMERIKSAAN
+
+Sistem menyediakan tiga sesi pemeriksaan dalam satu hari.
+
+Contoh:
+
+Sesi	Waktu
+Pemeriksaan 1	Pagi
+Pemeriksaan 2	Siang
+Pemeriksaan 3	Sore
+
+Waktu sebenarnya dapat disesuaikan dengan jadwal operasional yang ditentukan oleh pihak Sarana dan Prasarana.
+
+Contoh:
+
+Pemeriksaan 1 → 08:00
+Pemeriksaan 2 → 12:00
+Pemeriksaan 3 → 16:00
+11. MODUL SISTEM
+
+Sistem terdiri dari beberapa modul utama:
+
+Modul Login
+Modul Dashboard
+Modul Monitoring Air
+Modul Lokasi Monitoring
+Modul Histori Monitoring
+Modul Detail Monitoring
+Modul Pengguna
+Modul Alert/Trigger
+12. MODUL LOGIN
+
+Login digunakan untuk memastikan hanya pengguna yang memiliki akun yang dapat mengakses sistem.
+
+Input:
+
+Email/Username
+Password
+
+Sistem melakukan validasi username/email dan password.
+
+Apabila berhasil:
+
+Login
+ ↓
+Dashboard
+
+Apabila gagal:
+
+Email/password salah.
+13. MODUL MONITORING AIR
+
+Modul Monitoring Air merupakan fitur utama sistem.
+
+Modul digunakan untuk mencatat hasil pemeriksaan:
+
+GWT
+Kolam Air Bersih
+
+Pemeriksaan dilakukan tiga kali dalam satu hari.
+
+14. FORM INPUT MONITORING
+
+Form monitoring memiliki field:
+
+Field	Tipe Input	Wajib
+Lokasi	Dropdown	Ya
+Tanggal	Date	Ya
+Sesi Pemeriksaan	Dropdown	Ya
+Foto	File/Camera	Ya
+Kondisi	Dropdown	Ya
+Keterangan	Textarea	Ya
+Petugas	Otomatis	Ya
+15. LOKASI MONITORING
+
+Lokasi monitoring minimal terdiri dari:
+
+GWT
+Kolam Air Bersih
+
+Namun sistem harus dibuat fleksibel sehingga admin dapat menambahkan lokasi baru apabila diperlukan.
+
+Contoh:
+
+GWT
+GWT Blok A
+GWT Blok B
+Kolam Air Bersih
+Kolam Air Bersih Blok A
+Kolam Air Bersih Blok B
+
+Nama lokasi sebenarnya mengikuti kondisi fasilitas yang terdapat di lapangan.
+
+16. PILIHAN KONDISI
+
+Petugas memilih kondisi berdasarkan hasil pemeriksaan.
+
+Pilihan:
+
+1. Normal
+
+Menunjukkan kondisi air berada dalam kondisi normal berdasarkan hasil pemeriksaan petugas.
+
+2. Debit Turun
+
+Digunakan apabila petugas menemukan kondisi debit air mengalami penurunan.
+
+3. Tekanan Air Kecil
+
+Digunakan apabila petugas menemukan kondisi tekanan air lebih kecil dari kondisi normal.
+
+17. FOTO DOKUMENTASI
+
+Petugas wajib memasukkan foto sebagai dokumentasi pemeriksaan.
+
+Foto digunakan sebagai:
+
+Bukti pemeriksaan.
+Dokumentasi kondisi fasilitas.
+Referensi pemeriksaan.
+Histori visual.
+Pendukung apabila ditemukan kondisi tidak normal.
+
+Format yang dapat diterima:
+
+JPG
+JPEG
+PNG
+
+Sistem dapat memberikan batas ukuran file, misalnya maksimal 2–5 MB.
+
+18. KETERANGAN PEMERIKSAAN
+
+Petugas dapat memberikan keterangan melalui textarea.
+
+Contoh kondisi Normal:
+
+Kondisi air normal dan tidak ditemukan kendala pada saat pemeriksaan.
+
+Contoh Debit Turun:
+
+Debit air terlihat lebih kecil dibandingkan pemeriksaan sebelumnya.
+
+Contoh Tekanan Air Kecil:
+
+Tekanan air terlihat lebih kecil pada saat pemeriksaan.
+
+Keterangan digunakan untuk memberikan informasi tambahan mengenai kondisi yang ditemukan di lapangan.
+
+19. SISTEM ALERT/TRIGGER
+
+Sistem memberikan status atau peringatan berdasarkan kondisi yang dipilih petugas.
+
+Kondisi Normal
+🟢 NORMAL
+
+Sistem tidak memberikan peringatan khusus.
+
+Kondisi Debit Turun
+🟡 PERLU PERHATIAN
+
+Debit air mengalami penurunan.
+Kondisi Tekanan Air Kecil
+🟡 PERLU PERHATIAN
+
+Tekanan air terdeteksi kecil.
+
+Alert tersebut berasal dari input kondisi petugas, bukan dari sensor.
+
+20. DASHBOARD MONITORING
+
+Dashboard digunakan untuk memberikan gambaran kondisi monitoring secara ringkas.
+
+Contoh tampilan:
+
+========================================
+       MONITORING AIR SARPRAS
+========================================
+
+PEMERIKSAAN HARI INI
+
+Total Pemeriksaan
+3
+
+Normal
+2
+
+Debit Turun
+1
+
+Tekanan Air Kecil
+0
+
+----------------------------------------
+
+STATUS TERKINI
+
+GWT
+🟢 NORMAL
+
+Kolam Air Bersih
+🟡 DEBIT TURUN
+
+----------------------------------------
+
+PERINGATAN
+
+⚠ Debit air turun
+Lokasi : GWT
+Waktu  : 12:00
+
+[Lihat Detail]
+========================================
+21. HISTORI MONITORING
+
+Sistem menyediakan halaman histori untuk melihat seluruh hasil pemeriksaan.
+
+Contoh:
+
+Tanggal	Waktu	Lokasi	Kondisi	Petugas	Aksi
+11/09/2026	08:00	GWT	Normal	Petugas A	Detail
+11/09/2026	12:00	GWT	Debit Turun	Petugas A	Detail
+11/09/2026	16:00	GWT	Normal	Petugas A	Detail
+22. FILTER DATA
+
+Admin dapat melakukan filter berdasarkan:
+
+Tanggal
+Tanggal Mulai
+Tanggal Akhir
+Lokasi
+Semua
+GWT
+Kolam Air Bersih
+Kondisi
+Semua
+Normal
+Debit Turun
+Tekanan Air Kecil
+Petugas
+Semua Petugas
+Petugas A
+Petugas B
+23. DETAIL HASIL PEMERIKSAAN
+
+Halaman detail menampilkan seluruh informasi pemeriksaan.
+
+Contoh:
+
+DETAIL PEMERIKSAAN
+────────────────────────────
+
+Lokasi:
+GWT
+
+Tanggal:
+11 September 2026
+
+Waktu:
+12:00
+
+Petugas:
+Petugas A
+
+Kondisi:
+🟡 Debit Turun
+
+Keterangan:
+Debit terlihat lebih kecil dibandingkan
+pemeriksaan pagi.
+
+Dokumentasi:
+[Foto Pemeriksaan]
+
+Status:
+PERLU PERHATIAN
+24. PENCEGAHAN DATA DUPLIKAT
+
+Sistem harus mencegah pemeriksaan yang sama dicatat lebih dari satu kali.
+
+Contoh:
+
+Tanggal       : 11 September 2026
+Lokasi        : GWT
+Sesi          : Pagi
+
+Jika data tersebut sudah tersimpan, sistem tidak mengizinkan petugas membuat pemeriksaan yang sama untuk lokasi dan sesi tersebut.
+
+Pesan:
+
+Pemeriksaan untuk lokasi dan sesi tersebut sudah dilakukan.
+
+Hal ini bertujuan untuk menjaga konsistensi data.
+
+25. VALIDASI INPUT
+
+Sistem harus melakukan validasi terhadap data yang dimasukkan.
+
+Validasi:
+Lokasi wajib dipilih.
+Tanggal wajib diisi.
+Sesi pemeriksaan wajib dipilih.
+Kondisi wajib dipilih.
+Keterangan wajib diisi.
+Foto wajib diupload.
+Format foto harus sesuai.
+Ukuran foto tidak boleh melebihi batas.
+Petugas harus login.
+Data pemeriksaan yang sama tidak boleh dibuat dua kali.
+26. RESPONSIVE DESIGN
+
+Sistem harus dapat digunakan melalui:
+
+Smartphone
+Tablet
+Laptop
+Desktop
+
+Karena petugas melakukan pemeriksaan secara langsung di lapangan, tampilan smartphone menjadi salah satu prioritas.
+
+Alur input harus sederhana:
+
+Buka Website
+      ↓
+Login
+      ↓
+Pilih Monitoring
+      ↓
+Pilih Lokasi
+      ↓
+Ambil Foto
+      ↓
+Pilih Kondisi
+      ↓
+Isi Keterangan
+      ↓
+Simpan
+27. STRUKTUR DATABASE
+
+Database minimal memiliki tabel:
+
+users
+monitoring_locations
+water_monitorings
+27.1 Tabel Users
+
+Menyimpan data pengguna.
+
+Field:
+
+id
+name
+email
+password
+role
+created_at
+updated_at
+
+Role:
+
+admin
+petugas
+28. TABEL MONITORING_LOCATIONS
+
+Menyimpan data lokasi pemeriksaan.
+
+Field:
+
+id
+nama_lokasi
+jenis
+keterangan
+status
+created_at
+updated_at
+
+Contoh:
+
+GWT
+Kolam Air Bersih
+29. TABEL WATER_MONITORINGS
+
+Menyimpan hasil pemeriksaan.
+
+Field:
+
+id
+user_id
+location_id
+tanggal
+sesi
+waktu
+kondisi
+keterangan
+foto
+created_at
+updated_at
+
+Relasi:
+
+User
+   │
+   │
+   └──────< Water Monitoring >────── Location
+30. STATUS KONDISI DATABASE
+
+Nilai kondisi pada database:
+
+normal
+debit_turun
+tekanan_air_kecil
+
+Pada tampilan sistem:
+
+🟢 Normal
+🟡 Debit Turun
+🟠 Tekanan Air Kecil
+31. RELASI DATA
+
+Satu petugas dapat memiliki banyak data monitoring.
+
+Satu lokasi dapat memiliki banyak data monitoring.
+
+Relasi:
+
+users
+  │
+  │ 1
+  │
+  │ N
+  ▼
+water_monitorings
+  ▲
+  │ N
+  │
+  │ 1
+  │
+monitoring_locations
+32. KEAMANAN SISTEM
+
+Sistem harus menerapkan keamanan dasar:
+
+Authentication.
+Authorization berdasarkan role.
+Password hashing.
+CSRF Protection.
+Validasi input.
+Validasi file upload.
+Pembatasan akses halaman.
+Session management.
+Validasi data di server-side.
+Penyimpanan foto menggunakan Laravel Storage.
+33. TEKNOLOGI YANG DIGUNAKAN
+Backend
+
+Laravel 10
+
+Database
+
+MySQL
+
+Frontend
+
+Blade Template
+Bootstrap 5
+JavaScript
+
+Storage
+
+Laravel Storage
+
+Development Environment
+
+Laragon
+
+34. FITUR YANG TIDAK DIGUNAKAN PADA VERSI 1.0
+
+Untuk menjaga ruang lingkup tetap fokus, versi awal tidak mencakup:
+
+Sensor IoT.
+ESP32.
+Sensor debit air.
+Sensor tekanan air.
+Sensor level GWT.
+Monitoring otomatis.
+Kontrol pompa otomatis.
+AI prediksi.
+Machine Learning.
+Integrasi perangkat eksternal.
+
+Sistem versi 1.0 berfokus pada pencatatan dan monitoring manual secara digital.
+
+35. PENGEMBANGAN SISTEM DI MASA DEPAN
+
+Sistem dapat dikembangkan menjadi sistem yang lebih kompleks.
+
+V2 — Notifikasi
+
+Ketika ditemukan:
+
+Debit Turun
+
+sistem dapat memberikan notifikasi kepada admin.
+
+V3 — Modul Pemeliharaan
+
+Jika kondisi tidak normal terjadi:
+
+Monitoring
+     ↓
+Debit Turun
+     ↓
+Temuan
+     ↓
+Pemeriksaan
+     ↓
+Pemeliharaan
+     ↓
+Selesai
+V4 — IoT
+
+Sistem dapat dikembangkan dengan sensor.
+
+Sensor
+   ↓
+ESP32
+   ↓
+Internet
+   ↓
+API
+   ↓
+Laravel
+   ↓
+Database
+   ↓
+Dashboard
+
+Contohnya sensor dapat digunakan untuk membaca:
+
+Debit air.
+Level air.
+Tekanan.
+Parameter lain yang sesuai kebutuhan.
+V5 — Analitik dan AI
+
+Setelah data historis sudah cukup banyak, sistem dapat dikembangkan untuk:
+
+Analisis pola kondisi air.
+Deteksi anomali.
+Analisis kondisi tidak normal.
+Prediksi potensi gangguan.
+Rekomendasi pemeriksaan.
+Analisis histori monitoring.
+36. ACCEPTANCE CRITERIA
+
+Sistem dianggap berhasil apabila:
+
+AC-01
+
+Petugas dapat login ke sistem.
+
+AC-02
+
+Petugas dapat memilih lokasi monitoring.
+
+AC-03
+
+Petugas dapat melakukan pencatatan tiga sesi pemeriksaan dalam satu hari.
+
+AC-04
+
+Petugas dapat mengupload foto pemeriksaan.
+
+AC-05
+
+Petugas dapat mengisi keterangan.
+
+AC-06
+
+Petugas dapat memilih kondisi Normal, Debit Turun, atau Tekanan Air Kecil.
+
+AC-07
+
+Data pemeriksaan tersimpan ke database.
+
+AC-08
+
+Sistem mencatat identitas petugas secara otomatis.
+
+AC-09
+
+Sistem mencatat tanggal dan waktu pemeriksaan.
+
+AC-10
+
+Sistem mencegah pencatatan pemeriksaan yang sama secara berulang.
+
+AC-11
+
+Admin dapat melihat histori monitoring.
+
+AC-12
+
+Admin dapat melakukan filter data monitoring.
+
+AC-13
+
+Admin dapat melihat detail pemeriksaan.
+
+AC-14
+
+Admin dapat melihat foto dokumentasi.
+
+AC-15
+
+Sistem memberikan indikator/peringatan apabila kondisi bukan Normal.
+
+AC-16
+
+Dashboard dapat menampilkan ringkasan kondisi monitoring.
+
+AC-17
+
+Website dapat digunakan melalui smartphone.
+
+37. CONTOH ALUR PENGGUNAAN
+Pagi
+
+Petugas melakukan pemeriksaan GWT.
+
+Lokasi:
+GWT
+
+Sesi:
+Pagi
+
+Kondisi:
+Normal
+
+Keterangan:
+Kondisi air normal.
+
+Foto:
+IMG001.jpg
+
+Petugas menekan:
+
+Simpan
+
+Data masuk ke database.
+
+Siang
+
+Petugas kembali melakukan pemeriksaan.
+
+Lokasi:
+GWT
+
+Sesi:
+Siang
+
+Kondisi:
+Debit Turun
+
+Keterangan:
+Debit air terlihat menurun.
+
+Foto:
+IMG002.jpg
+
+Sistem menampilkan:
+
+⚠️ PERINGATAN
+
+Debit air mengalami penurunan.
+Sore
+
+Petugas melakukan pemeriksaan kembali.
+
+Lokasi:
+GWT
+
+Sesi:
+Sore
+
+Kondisi:
+Normal
+
+Keterangan:
+Kondisi air kembali normal.
+
+Foto:
+IMG003.jpg
+
+Dashboard kemudian menunjukkan:
+
+Pemeriksaan Hari Ini: 3
+
+Normal: 2
+Debit Turun: 1
+Tekanan Air Kecil: 0
+38. KONSEP UTAMA SISTEM
+
+Konsep utama sistem adalah:
+
+PEMERIKSAAN LAPANGAN
+        ↓
+INPUT DIGITAL
+        ↓
+FOTO
+        +
+KETERANGAN
+        +
+KONDISI
+        ↓
+DATABASE
+        ↓
+HISTORI MONITORING
+        ↓
+DASHBOARD
+        ↓
+ALERT KONDISI TIDAK NORMAL
+
+Sistem tidak menggantikan proses pemeriksaan fisik yang dilakukan petugas.
+
+Sistem berfungsi untuk mendigitalisasi proses pencatatan dan dokumentasi hasil pemeriksaan, sehingga data dapat disimpan, ditelusuri, dan dipantau dengan lebih mudah.
+
+39. KESIMPULAN
+
+Sistem Monitoring Kondisi GWT dan Kolam Air Bersih Berbasis Web merupakan sistem yang dirancang untuk membantu proses pencatatan hasil pemeriksaan kondisi air yang dilakukan oleh petugas Sarana dan Prasarana sebanyak tiga kali dalam sehari.
+
+Petugas melakukan pemeriksaan secara langsung di lapangan kemudian memasukkan hasil pemeriksaan melalui website berupa foto, keterangan, dan kondisi yang dipilih dari tiga kategori, yaitu Normal, Debit Turun, dan Tekanan Air Kecil.
+
+Data yang telah dimasukkan akan disimpan ke dalam database dan dapat ditampilkan kembali dalam bentuk histori monitoring serta dashboard. Apabila ditemukan kondisi selain Normal, sistem dapat memberikan indikator atau peringatan sehingga kondisi tersebut lebih mudah diketahui oleh admin atau pengelola.
+
+Pada versi awal, sistem tidak menggunakan sensor IoT karena proses pengukuran dan penentuan kondisi masih dilakukan secara langsung oleh petugas. IoT, notifikasi lanjutan, sistem pemeliharaan, analitik, dan AI dapat menjadi pengembangan pada versi berikutnya.
