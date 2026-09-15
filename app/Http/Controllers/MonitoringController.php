@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateWaterMonitoringRequest;
 use App\Models\MonitoringLocation;
 use App\Models\WaterMonitoring;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -18,19 +19,24 @@ class MonitoringController extends Controller
      *
      * Admin melihat seluruh data, petugas hanya melihat data miliknya.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         $user = Auth::user();
 
+        $filterTanggal = $request->input('tanggal');
+
         $monitorings = WaterMonitoring::with(['user', 'location'])
             ->when(! $user->isAdmin(), fn ($query) => $query->where('user_id', $user->id))
+            ->when($filterTanggal, fn ($query) => $query->whereDate('tanggal', $filterTanggal))
             ->latest('tanggal')
             ->latest('waktu')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
         return view('monitoring.index', [
             'monitorings' => $monitorings,
             'isAdmin' => $user->isAdmin(),
+            'filterTanggal' => $filterTanggal,
         ]);
     }
 
@@ -150,6 +156,27 @@ class MonitoringController extends Controller
             ->with('success', 'Pemeriksaan berhasil diperbarui.');
     }
 
+    /**
+     * Tampilkan detail satu pemeriksaan (URL dapat dibagikan sesuai PRD pasal 23).
+     *
+     * Petugas hanya dapat melihat data miliknya sendiri, admin dapat
+     * melihat semua data (dicek di sini -> 403 bila bukan miliknya).
+     */
+    public function show(WaterMonitoring $monitoring): View
+    {
+        $user = Auth::user();
+
+        if (! $user->isAdmin() && $monitoring->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat data ini.');
+        }
+
+        $monitoring->load(['user', 'location']);
+
+        return view('monitoring.show', [
+            'monitoring' => $monitoring,
+            'isAdmin' => $user->isAdmin(),
+        ]);
+    }
     /**
      * Hapus data pemeriksaan.
      *

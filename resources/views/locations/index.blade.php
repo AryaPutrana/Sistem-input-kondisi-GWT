@@ -15,7 +15,6 @@
                 <tr>
                     <th scope="col">#</th>
                     <th scope="col">Nama Lokasi</th>
-                    <th scope="col">Jenis</th>
                     <th scope="col">Status</th>
                     <th scope="col" class="text-center">Total Pemeriksaan</th>
                     <th scope="col" class="text-end">Aksi</th>
@@ -26,11 +25,6 @@
                     <tr>
                         <td>{{ $locations->firstItem() + $i }}</td>
                         <td>{{ $location->nama_lokasi }}</td>
-                        <td>
-                            <span class="badge bg-{{ $location->jenis === 'gwt' ? 'info' : 'primary' }}">
-                                {{ \App\Models\MonitoringLocation::JENIS[$location->jenis] ?? $location->jenis }}
-                            </span>
-                        </td>
                         <td>
                             <span class="badge bg-{{ $location->status === 'aktif' ? 'success' : 'secondary' }}">
                                 {{ \App\Models\MonitoringLocation::STATUS[$location->status] ?? $location->status }}

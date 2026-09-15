@@ -75,6 +75,41 @@
     </div>
 </main>
 
+<!-- Modal global untuk melihat foto pemeriksaan (dipakai histori & detail) -->
+<div class="modal fade" id="fotoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">Foto Pemeriksaan</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="fotoModalImg" src="" alt="Foto pemeriksaan" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var fotoModal = document.getElementById('fotoModal');
+        var fotoImg = document.getElementById('fotoModalImg');
+        if (! fotoModal || ! fotoImg) return;
+
+        fotoModal.addEventListener('show.bs.modal', function (event) {
+            var btn = event.relatedTarget;
+            var src = btn && btn.getAttribute('data-foto-src');
+            if (src) fotoImg.src = src;
+        });
+
+        fotoModal.addEventListener('hidden.bs.modal', function () {
+            fotoImg.src = '';
+        });
+    });
+</script>
+@endpush
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 @stack('scripts')
 </body>

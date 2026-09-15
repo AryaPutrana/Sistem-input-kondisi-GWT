@@ -50,4 +50,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('lokasi', MonitoringLocationController::class)->except('show');
         Route::resource('pengguna', UserController::class)->except('show');
     });
+
+    // Detail pemeriksaan — URL dapat dibagikan (shareable) sesuai PRD pasal 23.
+    // Semua role login: petugas hanya dapat membuka data miliknya sendiri
+    // (dicek pada MonitoringController::show -> 403 bila bukan miliknya),
+    // admin dapat membuka semua data.
+    Route::get('/monitoring/{monitoring}', [MonitoringController::class, 'show'])
+        ->name('monitoring.show');
 });

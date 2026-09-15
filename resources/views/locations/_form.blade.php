@@ -9,18 +9,6 @@
     @enderror
 </div>
 
-<div class="mb-3">
-    <label for="jenis" class="form-label">Jenis <span class="text-danger">*</span></label>
-    <select id="jenis" name="jenis" class="form-select @error('jenis') is-invalid @enderror" required>
-        <option value="">-- Pilih Jenis --</option>
-        @foreach ($jenisOptions as $value => $label)
-            <option value="{{ $value }}" @selected(old('jenis', $lokasi->jenis ?? '') === $value)>{{ $label }}</option>
-        @endforeach
-    </select>
-    @error('jenis')
-        <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
 
 <div class="mb-3">
     <label for="status" class="form-label">Status <span class="text-danger">*</span></label>

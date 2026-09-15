@@ -19,7 +19,7 @@ class DashboardController extends Controller
         $user = Auth::user();
         $today = now()->toDateString();
 
-        $base = WaterMonitoring::with(['user', 'location'])
+        $base = WaterMonitoring::query()
             ->when(! $user->isAdmin(), fn ($query) => $query->where('user_id', $user->id));
 
         $monitorings = (clone $base)->latest('tanggal')->latest('waktu');
@@ -34,12 +34,16 @@ class DashboardController extends Controller
             ->pluck('jumlah', 'kondisi')
             ->toArray();
 
-        $all = (clone $monitorings)->get();
+        $latestSub = (clone $base)
+            ->select('water_monitorings.*')
+            ->selectRaw('ROW_NUMBER() OVER (PARTITION BY location_id ORDER BY tanggal DESC, waktu DESC) AS rn');
 
-        $latestByLocation = collect();
-        foreach ($all as $wm) {
-            $latestByLocation->put($wm->location_id, $wm);
-        }
+        $latestByLocation = WaterMonitoring::query()
+            ->fromSub($latestSub->toBase(), 'latest')
+            ->where('rn', 1)
+            ->with(['user', 'location'])
+            ->get()
+            ->keyBy('location_id');
 
         $warningLocations = $latestByLocation
             ->filter(fn ($wm) => $wm->kondisi !== 'normal')

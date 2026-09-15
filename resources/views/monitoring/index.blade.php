@@ -10,6 +10,20 @@
     @endif
 </div>
 
+<form method="GET" action="{{ route('monitoring.index') }}" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label for="filter_tanggal" class="form-label small mb-1">Filter Tanggal</label>
+        <input type="date" id="filter_tanggal" name="tanggal" value="{{ $filterTanggal }}"
+               class="form-control">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Cari</button>
+        @if ($filterTanggal)
+            <a href="{{ route('monitoring.index') }}" class="btn btn-outline-secondary ms-1">Reset</a>
+        @endif
+    </div>
+</form>
+
 <div class="card shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -46,7 +60,11 @@
                         </td>
                         <td>{{ \Illuminate\Support\Str::limit($wm->keterangan, 40) }}</td>
                         <td>
-                            <a href="{{ asset('storage/' . $wm->foto) }}" target="_blank" rel="noopener">Lihat</a>
+                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                    data-bs-toggle="modal" data-bs-target="#fotoModal"
+                                    data-foto-src="{{ asset('storage/' . $wm->foto) }}">
+                                Lihat
+                            </button>
                         </td>
                         @if ($isAdmin)
                             <td>{{ $wm->user->name }}</td>

@@ -30,7 +30,6 @@ class UpdateMonitoringLocationRequest extends FormRequest
                 'max:255',
                 Rule::unique('monitoring_locations', 'nama_lokasi')->ignore($this->route('lokasi')),
             ],
-            'jenis' => ['required', Rule::in(array_keys(MonitoringLocation::JENIS))],
             'keterangan' => ['nullable', 'string'],
             'status' => ['required', Rule::in(array_keys(MonitoringLocation::STATUS))],
         ];
@@ -44,7 +43,6 @@ class UpdateMonitoringLocationRequest extends FormRequest
         return [
             'nama_lokasi.required' => 'Nama lokasi wajib diisi.',
             'nama_lokasi.unique' => 'Nama lokasi sudah digunakan.',
-            'jenis.required' => 'Jenis lokasi wajib dipilih.',
             'status.required' => 'Status wajib dipilih.',
         ];
     }
