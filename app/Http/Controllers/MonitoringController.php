@@ -24,19 +24,23 @@ class MonitoringController extends Controller
         $user = Auth::user();
 
         $filterTanggal = $request->input('tanggal');
+        $filterLokasi  = $request->input('lokasi');
 
         $monitorings = WaterMonitoring::with(['user', 'location'])
             ->when(! $user->isAdmin(), fn ($query) => $query->where('user_id', $user->id))
             ->when($filterTanggal, fn ($query) => $query->whereDate('tanggal', $filterTanggal))
+            ->when($filterLokasi, fn ($query) => $query->where('location_id', $filterLokasi))
             ->latest('tanggal')
             ->latest('waktu')
             ->paginate(10)
             ->withQueryString();
 
         return view('monitoring.index', [
-            'monitorings' => $monitorings,
-            'isAdmin' => $user->isAdmin(),
+            'monitorings'   => $monitorings,
+            'isAdmin'       => $user->isAdmin(),
             'filterTanggal' => $filterTanggal,
+            'filterLokasi'  => $filterLokasi,
+            'locations'     => MonitoringLocation::orderBy('nama_lokasi')->get(),
         ]);
     }
 

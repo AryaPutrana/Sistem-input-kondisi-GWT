@@ -12,13 +12,22 @@
 
 <form method="GET" action="{{ route('monitoring.index') }}" class="row g-2 align-items-end mb-3">
     <div class="col-auto">
+        <label for="filter_lokasi" class="form-label small mb-1">Lokasi</label>
+        <select id="filter_lokasi" name="lokasi" class="form-select">
+            <option value="">-- Semua Lokasi --</option>
+            @foreach ($locations as $location)
+                <option value="{{ $location->id }}" @selected(old('lokasi', $filterLokasi) == $location->id)>{{ $location->nama_lokasi }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-auto">
         <label for="filter_tanggal" class="form-label small mb-1">Filter Tanggal</label>
         <input type="date" id="filter_tanggal" name="tanggal" value="{{ $filterTanggal }}"
                class="form-control">
     </div>
     <div class="col-auto">
         <button type="submit" class="btn btn-primary">Cari</button>
-        @if ($filterTanggal)
+        @if ($filterTanggal || $filterLokasi)
             <a href="{{ route('monitoring.index') }}" class="btn btn-outline-secondary ms-1">Reset</a>
         @endif
     </div>

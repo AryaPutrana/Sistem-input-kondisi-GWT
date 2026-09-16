@@ -21,6 +21,7 @@
         @if ($isAdmin || $isOwner)
             <a href="{{ route('monitoring.edit', $monitoring) }}" class="btn btn-sm btn-outline-primary">Edit</a>
         @endif
+        <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary">Kembali ke Dashboard</a>
         <a href="{{ route('monitoring.index') }}" class="btn btn-sm btn-outline-secondary">Kembali ke Histori</a>
     </div>
 </div>

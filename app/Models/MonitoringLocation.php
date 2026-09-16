@@ -10,11 +10,6 @@ class MonitoringLocation extends Model
 {
     use HasFactory;
 
-    public const JENIS = [
-        'gwt' => 'GWT',
-        'kolam_air_bersih' => 'Kolam Air Bersih',
-    ];
-
     public const STATUS = [
         'aktif' => 'Aktif',
         'nonaktif' => 'Nonaktif',
@@ -27,7 +22,6 @@ class MonitoringLocation extends Model
      */
     protected $fillable = [
         'nama_lokasi',
-        'jenis',
         'keterangan',
         'status',
     ];

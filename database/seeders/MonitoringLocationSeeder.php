@@ -13,8 +13,8 @@ class MonitoringLocationSeeder extends Seeder
     public function run(): void
     {
         $locations = [
-            ['nama_lokasi' => 'GWT', 'jenis' => 'gwt', 'keterangan' => 'Ground Water Tank utama', 'status' => 'aktif'],
-            ['nama_lokasi' => 'Kolam Air Bersih', 'jenis' => 'kolam_air_bersih', 'keterangan' => 'Kolam air bersih utama', 'status' => 'aktif'],
+            ['nama_lokasi' => 'GWT', 'keterangan' => 'Ground Water Tank utama', 'status' => 'aktif'],
+            ['nama_lokasi' => 'Kolam Air Bersih', 'keterangan' => 'Kolam air bersih utama', 'status' => 'aktif'],
         ];
 
         foreach ($locations as $location) {

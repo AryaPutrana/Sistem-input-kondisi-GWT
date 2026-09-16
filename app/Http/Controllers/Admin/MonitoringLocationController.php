@@ -85,7 +85,6 @@ class MonitoringLocationController extends Controller
     private function formData(): array
     {
         return [
-            'jenisOptions' => MonitoringLocation::JENIS,
             'statusOptions' => MonitoringLocation::STATUS,
         ];
     }

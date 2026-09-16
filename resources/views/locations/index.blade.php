@@ -42,7 +42,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">Belum ada lokasi monitoring.</td>
+                        <td colspan="5" class="text-center text-muted py-4">Belum ada lokasi monitoring.</td>
                     </tr>
                 @endforelse
             </tbody>
