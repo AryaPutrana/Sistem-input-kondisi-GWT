@@ -67,6 +67,12 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
+        if ($pengguna->isAdmin() && $request->role !== 'admin' && User::where('role', 'admin')->count() <= 1) {
+            return back()
+                ->with('error', 'Tidak dapat menurunkan admin terakhir.')
+                ->withInput();
+        }
+
         $pengguna->update($data);
 
         return redirect()->route('pengguna.index')

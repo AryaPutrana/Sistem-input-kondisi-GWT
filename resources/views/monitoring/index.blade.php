@@ -70,6 +70,7 @@
                             <td>{{ $wm->user->name }}</td>
                         @endif
                         <td class="text-nowrap">
+                            <a href="{{ route('monitoring.show', $wm) }}" class="btn btn-sm btn-outline-secondary me-1">Detail</a>
                             @if ($isAdmin || $wm->user_id === Auth::user()->id)
                                 <a href="{{ route('monitoring.edit', $wm) }}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
                                 <form action="{{ route('monitoring.destroy', $wm) }}" method="POST" class="d-inline"

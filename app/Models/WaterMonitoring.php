@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 class WaterMonitoring extends Model
 {
@@ -57,8 +59,15 @@ class WaterMonitoring extends Model
      */
     protected $casts = [
         'tanggal' => 'date',
-        'waktu' => 'datetime:H:i',
     ];
+
+    protected function waktu(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => $value ? Carbon::createFromFormat('H:i:s', $value) : null,
+            set: fn (mixed $value) => $value ? Carbon::parse($value)->format('H:i:s') : null,
+        );
+    }
 
     public function user(): BelongsTo
     {

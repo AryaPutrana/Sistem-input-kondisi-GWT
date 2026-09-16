@@ -37,12 +37,17 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name.required' => 'Nama wajib diisi.',
+            'name.string' => 'Nama tidak valid.',
+            'name.max' => 'Nama maksimal 255 karakter.',
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 255 karakter.',
             'email.unique' => 'Email sudah digunakan.',
+            'password.string' => 'Password tidak valid.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'role.required' => 'Role wajib dipilih.',
+            'role.in' => 'Role tidak valid.',
         ];
     }
 }

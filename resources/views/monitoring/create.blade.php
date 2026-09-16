@@ -94,7 +94,7 @@
 
                     <div class="alert alert-light border mb-3">
                         <strong>Petugas:</strong> {{ Auth::user()->name }}
-                        <span class="text-muted small">(diisi otomatis)</span>
+                        <span class="text-muted small"></span>
                     </div>
 
                     <button type="submit" class="btn btn-primary">Simpan Pemeriksaan</button>

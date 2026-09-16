@@ -32,13 +32,11 @@
 <div class="row g-4 mb-4">
     <div class="col-lg-7">
         <div class="card shadow-sm h-100">
-            <div class="card-body d-flex align-items-center justify-content-center">
+            <div class="card-body text-center">
                 @if ($monitoring->foto)
-                    <button type="button" class="btn btn-lg btn-primary"
-                            data-bs-toggle="modal" data-bs-target="#fotoModal"
-                            data-foto-src="{{ asset('storage/' . $monitoring->foto) }}">
-                        Lihat Foto Pemeriksaan
-                    </button>
+                    <img src="{{ asset('storage/' . $monitoring->foto) }}"
+                         alt="Foto pemeriksaan {{ $monitoring->location->nama_lokasi }}"
+                         class="img-fluid rounded w-100">
                 @else
                     <div class="text-center text-muted py-5">
                         <p class="mb-0">Tidak ada foto untuk pemeriksaan ini.</p>
@@ -54,9 +52,6 @@
                 <dl class="row mb-0">
                     <dt class="col-sm-4">Lokasi</dt>
                     <dd class="col-sm-8">{{ $monitoring->location->nama_lokasi }}</dd>
-
-                    <dt class="col-sm-4">Alamat</dt>
-                    <dd class="col-sm-8">{{ $monitoring->location->alamat }}</dd>
 
                     <dt class="col-sm-4">Tanggal</dt>
                     <dd class="col-sm-8">{{ $monitoring->tanggal->format('d/m/Y') }}</dd>

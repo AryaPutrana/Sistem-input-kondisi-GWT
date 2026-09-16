@@ -45,9 +45,13 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('location_id');
 
-        $warningLocations = $latestByLocation
-            ->filter(fn ($wm) => $wm->kondisi !== 'normal')
-            ->values();
+        $warningLocations = (clone $base)
+            ->where('kondisi', '!=', 'normal')
+            ->with(['user', 'location'])
+            ->orderBy('tanggal')
+            ->orderBy('waktu')
+            ->orderBy('id')
+            ->get();
 
         $activLocationsCount = MonitoringLocation::where('status', 'aktif')->count();
         $locations = MonitoringLocation::where('status', 'aktif')

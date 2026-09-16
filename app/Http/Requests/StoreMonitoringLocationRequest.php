@@ -37,8 +37,12 @@ class StoreMonitoringLocationRequest extends FormRequest
     {
         return [
             'nama_lokasi.required' => 'Nama lokasi wajib diisi.',
+            'nama_lokasi.string' => 'Nama lokasi tidak valid.',
+            'nama_lokasi.max' => 'Nama lokasi maksimal 255 karakter.',
             'nama_lokasi.unique' => 'Nama lokasi sudah digunakan.',
+            'keterangan.string' => 'Keterangan tidak valid.',
             'status.required' => 'Status wajib dipilih.',
+            'status.in' => 'Status tidak valid.',
         ];
     }
 }
