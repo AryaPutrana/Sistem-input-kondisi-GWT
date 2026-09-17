@@ -8,6 +8,8 @@
     <a href="{{ route('pengguna.create') }}" class="btn btn-primary">+ Tambah Pengguna</a>
 </div>
 
+<div class="text-muted small mb-3">Role pengguna hanya dapat diatur saat menambah pengguna dan tidak dapat diubah setelahnya.</div>
+
 <div class="card shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">

@@ -12,6 +12,27 @@
     @endif
 </div>
 
+<form method="GET" action="{{ route('dashboard') }}" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label for="dari" class="form-label small mb-1">Periode Dari</label>
+        <input type="date" id="dari" name="dari" value="{{ $dateDari }}" class="form-control">
+    </div>
+    <div class="col-auto">
+        <label for="sampai" class="form-label small mb-1">Sampai</label>
+        <input type="date" id="sampai" name="sampai" value="{{ $dateSampai }}" class="form-control">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Terapkan</button>
+    </div>
+    <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2 mb-1">
+        <span class="text-muted small"></span>
+        <a href="{{ route('dashboard', ['preset' => 'hari_ini']) }}" class="btn btn-sm btn-outline-secondary">Hari Ini</a>
+        <a href="{{ route('dashboard', ['preset' => '7hari']) }}" class="btn btn-sm btn-outline-secondary">7 Hari Terakhir</a>
+        <a href="{{ route('dashboard', ['preset' => 'bulan_ini']) }}" class="btn btn-sm btn-outline-secondary">Bulan Ini</a>
+        <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
 @if ($total === 0)
     <div class="alert alert-info" role="alert">
         Belum ada data pemeriksaan. Mulai dari input pemeriksaan pertama untuk melihat status monitoring di dashboard ini.
@@ -50,7 +71,7 @@
     <div class="col-6 col-md-3">
         <div class="card shadow-sm h-100">
             <div class="card-body">
-                <div class="text-muted small">Total Pemeriksaan</div>
+                <div class="text-muted small">Total Pemeriksaan (Semua Periode)</div>
                 <div class="fs-3 fw-bold">{{ $total }}</div>
                 <span class="badge bg-primary">{{ $isAdmin ? 'Semua lokasi' : 'Milik Anda' }}</span>
             </div>
@@ -59,9 +80,9 @@
     <div class="col-6 col-md-3">
         <div class="card shadow-sm h-100">
             <div class="card-body">
-                <div class="text-muted small">Pemeriksaan Hari Ini</div>
-                <div class="fs-3 fw-bold">{{ $todayCount }}</div>
-                <span class="badge bg-info text-dark">{{ now()->format('d/m/Y') }}</span>
+                <div class="text-muted small">Pemeriksaan</div>
+                <div class="fs-3 fw-bold">{{ $rangeCount }}</div>
+                <span class="badge bg-info text-dark">{{ $rangeLabel }}</span>
             </div>
         </div>
     </div>
@@ -135,7 +156,7 @@
 
     <div class="col-lg-5">
         <div class="card shadow-sm h-100">
-            <div class="card-header bg-white fw-bold">Rekap Kondisi Hari Ini</div>
+            <div class="card-header bg-white fw-bold">Rekap Kondisi {{ $rangeLabel }}</div>
             <div class="card-body">
                 <div style="height: 260px">
                     <canvas id="kondisiChart"></canvas>

@@ -22,15 +22,26 @@
 
 <div class="mb-3">
     <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
-    <select id="role" name="role" class="form-select @error('role') is-invalid @enderror" required>
-        <option value="">-- Pilih Role --</option>
-        @foreach ($roles as $value => $label)
-            <option value="{{ $value }}" @selected(old('role', $pengguna->role ?? '') === $value)>{{ $label }}</option>
-        @endforeach
-    </select>
-    @error('role')
-        <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
+    @isset($pengguna)
+        @php
+            $roleLabel = \App\Models\User::ROLES[$pengguna->role] ?? ucfirst($pengguna->role);
+            $roleBadge = $pengguna->isAdmin() ? 'danger' : 'primary';
+        @endphp
+        <div>
+            <span class="badge bg-{{ $roleBadge }}">{{ $roleLabel }}</span>
+            <span class="text-muted small">(Role tidak dapat diubah setelah pengguna dibuat.)</span>
+        </div>
+    @else
+        <select id="role" name="role" class="form-select @error('role') is-invalid @enderror" required>
+            <option value="">-- Pilih Role --</option>
+            @foreach ($roles as $value => $label)
+                <option value="{{ $value }}" @selected(old('role') === $value)>{{ $label }}</option>
+            @endforeach
+        </select>
+        @error('role')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    @endisset
 </div>
 
 <hr>

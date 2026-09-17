@@ -26,7 +26,6 @@ class UpdateUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('pengguna'))],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(['admin', 'petugas'])],
         ];
     }
 
@@ -46,8 +45,6 @@ class UpdateUserRequest extends FormRequest
             'password.string' => 'Password tidak valid.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'role.required' => 'Role wajib dipilih.',
-            'role.in' => 'Role tidak valid.',
         ];
     }
 }

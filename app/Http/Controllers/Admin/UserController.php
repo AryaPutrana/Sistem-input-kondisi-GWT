@@ -18,7 +18,10 @@ class UserController extends Controller
      */
     public function index(): View
     {
-        $users = User::orderBy('name')
+        $users = User::orderByRaw(
+            "CASE WHEN role = 'admin' THEN 0 ELSE 1 END"
+        )
+            ->orderBy('name')
             ->paginate(10);
 
         return view('users.index', compact('users'));
@@ -61,16 +64,10 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $pengguna): RedirectResponse
     {
-        $data = $request->only(['name', 'email', 'role']);
+        $data = $request->only(['name', 'email']);
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
-        }
-
-        if ($pengguna->isAdmin() && $request->role !== 'admin' && User::where('role', 'admin')->count() <= 1) {
-            return back()
-                ->with('error', 'Tidak dapat menurunkan admin terakhir.')
-                ->withInput();
         }
 
         $pengguna->update($data);
