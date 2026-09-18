@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\FinanceLocationController;
 use App\Http\Controllers\Admin\MonitoringLocationController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\MonitoringController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,24 +32,46 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/laporan-bulanan', [DashboardController::class, 'financeSection'])
+        ->name('dashboard.finance-section');
 
     // Admin & petugas: melihat, mengubah, dan menghapus data pemeriksaan
+    // serta data keuangan (petugas hanya dapat mengelola data miliknya sendiri)
     Route::middleware('role:admin,petugas')->group(function () {
         Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');
         Route::get('/monitoring/{monitoring}/edit', [MonitoringController::class, 'edit'])->name('monitoring.edit');
         Route::put('/monitoring/{monitoring}', [MonitoringController::class, 'update'])->name('monitoring.update');
         Route::delete('/monitoring/{monitoring}', [MonitoringController::class, 'destroy'])->name('monitoring.destroy');
+        Route::get('/keuangan/{report}/edit', [FinanceReportController::class, 'edit'])->name('keuangan.edit');
+        Route::put('/keuangan/{report}', [FinanceReportController::class, 'update'])->name('keuangan.update');
+        Route::delete('/keuangan/{report}', [FinanceReportController::class, 'destroy'])->name('keuangan.destroy');
     });
 
-    // Hanya petugas: input pemeriksaan
+    // Hanya petugas: input pemeriksaan & input/riwayat keuangan
     Route::middleware('role:petugas')->group(function () {
         Route::get('/monitoring/create', [MonitoringController::class, 'create'])->name('monitoring.create');
         Route::post('/monitoring', [MonitoringController::class, 'store'])->name('monitoring.store');
+        Route::get('/keuangan/create', [FinanceReportController::class, 'create'])->name('keuangan.create');
+        Route::post('/keuangan', [FinanceReportController::class, 'store'])->name('keuangan.store');
+        Route::get('/keuangan/riwayat', [FinanceReportController::class, 'riwayat'])->name('keuangan.riwayat');
     });
 
-    // Hanya admin
+    // Hanya admin: laporan bulanan keuangan & kelola data master
     Route::middleware('role:admin')->group(function () {
+        Route::get('/keuangan', [FinanceReportController::class, 'index'])->name('keuangan.index');
+        Route::get('/keuangan/pdf', [FinanceReportController::class, 'exportPdf'])->name('keuangan.pdf');
         Route::resource('lokasi', MonitoringLocationController::class)->except('show');
+        Route::resource('lokasi-bulanan', FinanceLocationController::class)
+            ->parameters(['lokasi-bulanan' => 'lokasiBulanan'])
+            ->names([
+                'index' => 'lokasiBulanan.index',
+                'create' => 'lokasiBulanan.create',
+                'store' => 'lokasiBulanan.store',
+                'edit' => 'lokasiBulanan.edit',
+                'update' => 'lokasiBulanan.update',
+                'destroy' => 'lokasiBulanan.destroy',
+            ])
+            ->except('show');
         Route::resource('pengguna', UserController::class)->except('show');
     });
 

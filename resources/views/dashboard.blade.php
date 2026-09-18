@@ -21,15 +21,16 @@
         <label for="sampai" class="form-label small mb-1">Sampai</label>
         <input type="date" id="sampai" name="sampai" value="{{ $dateSampai }}" class="form-control">
     </div>
+    <input type="hidden" name="bulan" value="{{ $financeBulan }}">
     <div class="col-auto">
         <button type="submit" class="btn btn-primary">Terapkan</button>
     </div>
     <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2 mb-1">
         <span class="text-muted small"></span>
-        <a href="{{ route('dashboard', ['preset' => 'hari_ini']) }}" class="btn btn-sm btn-outline-secondary">Hari Ini</a>
-        <a href="{{ route('dashboard', ['preset' => '7hari']) }}" class="btn btn-sm btn-outline-secondary">7 Hari Terakhir</a>
-        <a href="{{ route('dashboard', ['preset' => 'bulan_ini']) }}" class="btn btn-sm btn-outline-secondary">Bulan Ini</a>
-        <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+        <a href="{{ route('dashboard', ['preset' => 'hari_ini', 'bulan' => $financeBulan]) }}" class="btn btn-sm btn-outline-secondary">Hari Ini</a>
+        <a href="{{ route('dashboard', ['preset' => '7hari', 'bulan' => $financeBulan]) }}" class="btn btn-sm btn-outline-secondary">7 Hari Terakhir</a>
+        <a href="{{ route('dashboard', ['preset' => 'bulan_ini', 'bulan' => $financeBulan]) }}" class="btn btn-sm btn-outline-secondary">Bulan Ini</a>
+        <a href="{{ route('dashboard', ['bulan' => $financeBulan]) }}" class="btn btn-sm btn-outline-secondary">Reset</a>
     </div>
 </form>
 
@@ -68,39 +69,91 @@
 @endphp
 
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4 col-xl-2">
         <div class="card shadow-sm h-100">
             <div class="card-body">
-                <div class="text-muted small">Total Pemeriksaan (Semua Periode)</div>
-                <div class="fs-3 fw-bold">{{ $total }}</div>
-                <span class="badge bg-primary">{{ $isAdmin ? 'Semua lokasi' : 'Milik Anda' }}</span>
+                <div class="text-muted small">Total Pemeriksaan</div>
+                <div class="fs-4 fw-bold">{{ $total }}</div>
+                <span class="badge bg-primary text-truncate d-inline-block" style="max-width:100%" title="Semua periode">{{ $isAdmin ? 'Semua lokasi' : 'Milik Anda' }}</span>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4 col-xl-2">
         <div class="card shadow-sm h-100">
             <div class="card-body">
-                <div class="text-muted small">Pemeriksaan</div>
-                <div class="fs-3 fw-bold">{{ $rangeCount }}</div>
-                <span class="badge bg-info text-dark">{{ $rangeLabel }}</span>
+                <div class="text-muted small">Pemeriksaan Periode</div>
+                <div class="fs-4 fw-bold">{{ $rangeCount }}</div>
+                <span class="badge bg-info text-dark text-truncate d-inline-block" style="max-width:100%" title="{{ $rangeLabel }}">{{ $rangeLabel }}</span>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Cakupan Sesi</div>
+                <div class="fs-4 fw-bold">{{ $sesiCoverage }}%</div>
+                <span class="badge bg-secondary text-truncate d-inline-block" style="max-width:100%" title="Sesi terisi dari kemungkinan {{ $daysInRange * count(\App\Models\WaterMonitoring::SESI) }} per lokasi">{{ $daysInRange }} hari</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
         <div class="card shadow-sm h-100">
             <div class="card-body">
                 <div class="text-muted small">Lokasi Aktif</div>
-                <div class="fs-3 fw-bold">{{ $activeLocationsCount }}</div>
-                <span class="badge bg-secondary">Terdaftar</span>
+                <div class="fs-4 fw-bold">{{ $activeLocationsCount }}</div>
+                <span class="badge bg-secondary text-truncate d-inline-block" style="max-width:100%" title="Lokasi terdaftar">Terdaftar</span>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4 col-xl-2">
         <div class="card shadow-sm h-100 border-danger">
             <div class="card-body">
                 <div class="text-muted small">Catatan Perlu Perhatian</div>
-                <div class="fs-3 fw-bold text-danger">{{ $warningLocations->count() }}</div>
-                <span class="badge bg-danger">Cek segera</span>
+                <div class="fs-4 fw-bold text-danger">{{ $warningLocations->count() }}</div>
+                <span class="badge bg-danger text-truncate d-inline-block" style="max-width:100%" title="Cek segera">Cek segera</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="card shadow-sm h-100 border-success">
+            <div class="card-body">
+                <div class="text-muted small">% Normal Periode</div>
+                <div class="fs-4 fw-bold text-success">{{ $normalPercent }}%</div>
+                <span class="badge bg-success text-truncate d-inline-block" style="max-width:100%" title="{{ $rangeLabel }}">{{ $rangeCount > 0 ? $rangeLabel : 'Belum ada' }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold">Rekap Kondisi {{ $rangeLabel }}</div>
+            <div class="card-body">
+                <div style="height: 260px">
+                    <canvas id="kondisiChart"></canvas>
+                </div>
+                <div class="row text-center mt-3 g-2">
+                    @foreach ($chartLabels as $i => $label)
+                        <div class="col-4">
+                            <span class="badge {{ $kondisiBadge(array_keys(\App\Models\WaterMonitoring::KONDISI)[$i]) }}">{{ $label }}</span>
+                            <div class="fs-5 fw-bold mt-1">{{ $chartData[$i] }}</div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold">Kondisi per Lokasi {{ $rangeLabel }}</div>
+            <div class="card-body">
+                <div style="height: 260px">
+                    <canvas id="lokasiChart"></canvas>
+                </div>
+                <div class="text-muted small mt-3">
+                    Jumlah pemeriksaan per kondisi pada setiap lokasi dalam periode terpilih.
+                </div>
             </div>
         </div>
     </div>
@@ -156,25 +209,61 @@
 
     <div class="col-lg-5">
         <div class="card shadow-sm h-100">
-            <div class="card-header bg-white fw-bold">Rekap Kondisi {{ $rangeLabel }}</div>
-            <div class="card-body">
-                <div style="height: 260px">
-                    <canvas id="kondisiChart"></canvas>
-                </div>
-                <div class="row text-center mt-3 g-2">
-                    @foreach ($chartLabels as $i => $label)
-                        <div class="col-4">
-                            <span class="badge {{ $kondisiBadge(array_keys(\App\Models\WaterMonitoring::KONDISI)[$i]) }}">{{ $label }}</span>
-                            <div class="fs-5 fw-bold mt-1">{{ $chartData[$i] }}</div>
-                        </div>
-                    @endforeach
-                </div>
+            <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                <span>Kepatuhan Sesi Lokasi</span>
+                <span class="small text-muted">{{ $rangeLabel }}</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Lokasi</th>
+                            <th scope="col">Pagi</th>
+                            <th scope="col">Siang</th>
+                            <th scope="col">Sore</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($locations as $location)
+                            @php
+                                $s = $sesiPerLokasi->get($location->id, collect());
+                                $pagi = $s->get('pagi', 0);
+                                $siang = $s->get('siang', 0);
+                                $sore = $s->get('sore', 0);
+                                $terisi = $pagi + $siang + $sore;
+                                $mungkin = $daysInRange * count(\App\Models\WaterMonitoring::SESI);
+                                $lengkap = $terisi >= $mungkin;
+                            @endphp
+                            <tr>
+                                <td>{{ $location->nama_lokasi }}</td>
+                                <td><span class="badge {{ $pagi >= $daysInRange ? 'bg-success' : 'bg-warning text-dark' }}">{{ $pagi }}/{{ $daysInRange }}</span></td>
+                                <td><span class="badge {{ $siang >= $daysInRange ? 'bg-success' : 'bg-warning text-dark' }}">{{ $siang }}/{{ $daysInRange }}</span></td>
+                                <td><span class="badge {{ $sore >= $daysInRange ? 'bg-success' : 'bg-warning text-dark' }}">{{ $sore }}/{{ $daysInRange }}</span></td>
+                                <td>
+                                    @if ($lengkap)
+                                        <span class="badge bg-success">Lengkap</span>
+                                    @else
+                                        <span class="badge bg-warning text-dark">Kurang {{ $mungkin - $terisi }} sesi</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">Belum ada lokasi aktif.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white small text-muted">
+                Target {{ count(\App\Models\WaterMonitoring::SESI) }} sesi/hari &times; {{ $daysInRange }} hari per lokasi.
             </div>
         </div>
     </div>
 </div>
 
-<div class="card shadow-sm">
+<div class="card shadow-sm mb-4">
     <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
         <span>Riwayat Pemeriksaan Terbaru</span>
         <a href="{{ route('monitoring.index') }}" class="small text-decoration-none">Lihat semua</a>
@@ -218,6 +307,10 @@
         </table>
     </div>
 </div>
+
+<div id="finance-section">
+    @include('partials.finance_section')
+</div>
 @endsection
 
 @push('scripts')
@@ -243,5 +336,76 @@
             },
         });
     }
+
+    const lokCtx = document.getElementById('lokasiChart');
+    if (lokCtx) {
+        new Chart(lokCtx, {
+            type: 'bar',
+            data: {
+                labels: @json($stackLabels),
+                datasets: [
+                    { label: 'Normal', data: @json($stackNormal), backgroundColor: '#198754' },
+                    { label: 'Debit Turun', data: @json($stackDebit), backgroundColor: '#ffc107' },
+                    { label: 'Tekanan Air Kecil', data: @json($stackTekanan), backgroundColor: '#dc3545' },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } },
+                },
+                plugins: {
+                    legend: { position: 'bottom' },
+                },
+            },
+        });
+    }
+
+    document.addEventListener('submit', function (event) {
+        const form = event.target;
+        if (! form || form.id !== 'financeForm') return;
+
+        event.preventDefault();
+
+        const input = form.querySelector('input[name="bulan"]');
+        if (! input || ! input.value) return;
+
+        const params = new URLSearchParams(window.location.search);
+        params.set('bulan', input.value);
+
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn ? btn.textContent : '';
+
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Memuat...';
+        }
+
+        fetch('{{ route('dashboard.finance-section') }}?' + params.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        })
+            .then(function (response) {
+                if (! response.ok) throw new Error('Gagal memuat data');
+                return response.text();
+            })
+            .then(function (html) {
+                const section = document.getElementById('finance-section');
+                if (section) section.innerHTML = html;
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('bulan', input.value);
+                window.history.replaceState({}, '', url.toString());
+            })
+            .catch(function (err) {
+                console.error(err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+                window.location.reload();
+            });
+    });
 </script>
 @endpush

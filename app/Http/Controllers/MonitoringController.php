@@ -6,6 +6,7 @@ use App\Http\Requests\StoreWaterMonitoringRequest;
 use App\Http\Requests\UpdateWaterMonitoringRequest;
 use App\Models\MonitoringLocation;
 use App\Models\WaterMonitoring;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,26 @@ use Illuminate\View\View;
 
 class MonitoringController extends Controller
 {
+    /**
+     * Pilihan lokasi untuk form.
+     *
+     * Lokasi aktif selalu tersedia. Lokasi non-aktif hanya dimuat bila lokasi
+     * tersebut sedang dipakai oleh record yang sedang diedit, agar edit tidak
+     * kehilangan pilihan yang sudah tersimpan.
+     */
+    protected function locationOptions(?WaterMonitoring $monitoring = null): Collection
+    {
+        return MonitoringLocation::query()
+            ->where(function ($query) use ($monitoring) {
+                $query->where('status', 'aktif');
+
+                if ($monitoring?->location_id) {
+                    $query->orWhere('id', $monitoring->location_id);
+                }
+            })
+            ->orderBy('nama_lokasi')
+            ->get();
+    }
     /**
      * Tampilkan daftar hasil pemeriksaan.
      *
@@ -103,9 +124,7 @@ class MonitoringController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mengubah data ini.');
         }
 
-        $locations = MonitoringLocation::where('status', 'aktif')
-            ->orderBy('nama_lokasi')
-            ->get();
+        $locations = $this->locationOptions($monitoring);
 
         return view('monitoring.edit', [
             'monitoring' => $monitoring,

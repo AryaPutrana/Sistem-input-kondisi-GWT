@@ -96,6 +96,11 @@ class UserController extends Controller
                 ->with('error', 'Pengguna tidak dapat dihapus karena memiliki data pemeriksaan.');
         }
 
+        if ($pengguna->financeReports()->exists()) {
+            return redirect()->route('pengguna.index')
+                ->with('error', 'Pengguna tidak dapat dihapus karena memiliki data laporan bulanan.');
+        }
+
         $pengguna->delete();
 
         return redirect()->route('pengguna.index')

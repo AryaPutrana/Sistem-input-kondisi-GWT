@@ -45,6 +45,11 @@ class User extends Authenticatable
         return $this->hasMany(WaterMonitoring::class);
     }
 
+    public function financeReports(): HasMany
+    {
+        return $this->hasMany(FinanceReport::class);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

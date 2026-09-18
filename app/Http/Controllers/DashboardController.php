@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FinanceReport;
 use App\Models\MonitoringLocation;
 use App\Models\WaterMonitoring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -82,6 +84,48 @@ class DashboardController extends Controller
             $chartData[] = $rangeCounts[$key] ?? 0;
         }
 
+        $daysInRange = (int) Carbon::parse($sampai)->startOfDay()
+            ->diffInDays(Carbon::parse($dari)->startOfDay()) + 1;
+
+        $possibleSessions = $activLocationsCount * $daysInRange * count(WaterMonitoring::SESI);
+        $sesiCoverage = $possibleSessions > 0
+            ? min(100, (int) round($rangeCount / $possibleSessions * 100))
+            : 0;
+
+        $normalPercent = $rangeCount > 0
+            ? (int) round(($rangeCounts['normal'] ?? 0) / $rangeCount * 100)
+            : 0;
+
+        $kondisiPerLokasi = (clone $rangeBase)
+            ->selectRaw('location_id, kondisi, count(*) as jumlah')
+            ->groupBy('location_id', 'kondisi')
+            ->get()
+            ->groupBy('location_id')
+            ->map(fn ($rows) => $rows->pluck('jumlah', 'kondisi'));
+
+        $stackLabels = [];
+        $stackNormal = [];
+        $stackDebit = [];
+        $stackTekanan = [];
+
+        foreach ($locations as $location) {
+            $set = $kondisiPerLokasi->get($location->id, collect());
+
+            $stackLabels[] = $location->nama_lokasi;
+            $stackNormal[] = $set->get('normal', 0);
+            $stackDebit[] = $set->get('debit_turun', 0);
+            $stackTekanan[] = $set->get('tekanan_air_kecil', 0);
+        }
+
+        $sesiPerLokasi = (clone $rangeBase)
+            ->selectRaw('location_id, sesi, count(*) as jumlah')
+            ->groupBy('location_id', 'sesi')
+            ->get()
+            ->groupBy('location_id')
+            ->map(fn ($rows) => $rows->pluck('jumlah', 'sesi'));
+
+        $financeData = $this->financeData($request);
+
         return view('dashboard', [
             'isAdmin' => $user->isAdmin(),
             'total' => $total,
@@ -97,7 +141,80 @@ class DashboardController extends Controller
             'chartLabels' => $chartLabels,
             'chartData' => $chartData,
             'recent' => (clone $monitorings)->limit(10)->get(),
+            'daysInRange' => $daysInRange,
+            'sesiCoverage' => $sesiCoverage,
+            'normalPercent' => $normalPercent,
+            'stackLabels' => $stackLabels,
+            'stackNormal' => $stackNormal,
+            'stackDebit' => $stackDebit,
+            'stackTekanan' => $stackTekanan,
+            'sesiPerLokasi' => $sesiPerLokasi,
+            ... $financeData,
         ]);
+    }
+
+    /**
+     * Render hanya section Laporan Bulanan untuk AJAX.
+     *
+     * Dipakai form filter bulan pada dashboard agar pergantian bulan
+     * berjalan tanpa me-refresh seluruh halaman.
+     */
+    public function financeSection(Request $request): View
+    {
+        return view('partials.finance_section', array_merge(
+            $this->financeData($request),
+            ['isAdmin' => $request->user()->isAdmin()]
+        ));
+    }
+
+    /**
+     * Data ringkasan laporan bulanan (input keuangan) pada bulan terpilih.
+     *
+     * Admin melihat semua petugas, petugas hanya data miliknya sendiri.
+     * Dipakai oleh dashboard utama dan endpoint AJAX section laporan bulanan.
+     *
+     * @return array<string, mixed>
+     */
+    protected function financeData(Request $request): array
+    {
+        $user = $request->user();
+
+        $financeBulan = $this->resolveBulan($request);
+        $financeDari = Carbon::createFromFormat('Y-m', $financeBulan)->startOfMonth();
+        $financeSampai = Carbon::createFromFormat('Y-m', $financeBulan)->endOfMonth();
+
+        $financeBase = FinanceReport::query()
+            ->when(! $user->isAdmin(), fn ($query) => $query->where('user_id', $user->id));
+
+        $financeTotal = (clone $financeBase)
+            ->whereBetween('tanggal', [$financeDari, $financeSampai])
+            ->count();
+
+        $financeCounts = [];
+
+        foreach (array_keys(FinanceReport::KONDISI) as $kondisi) {
+            $financeCounts[$kondisi] = (clone $financeBase)
+                ->whereBetween('tanggal', [$financeDari, $financeSampai])
+                ->where('kondisi', $kondisi)
+                ->count();
+        }
+
+        $financeRecent = (clone $financeBase)
+            ->whereBetween('tanggal', [$financeDari, $financeSampai])
+            ->with(['user', 'location'])
+            ->latest('tanggal')
+            ->latest('id')
+            ->limit(5)
+            ->get();
+
+        return [
+            'financeBulan' => $financeBulan,
+            'financeBulanLabel' => $financeDari->locale('id')->translatedFormat('F Y'),
+            'financeKondisiLabels' => FinanceReport::KONDISI,
+            'financeTotal' => $financeTotal,
+            'financeCounts' => $financeCounts,
+            'financeRecent' => $financeRecent,
+        ];
     }
 
     /**
@@ -167,5 +284,21 @@ class DashboardController extends Controller
         }
 
         return sprintf('%04d-%02d-%02d', $year, $month, $day);
+    }
+
+    /**
+     * Tentukan bulan (format Y-m) untuk section Laporan Bulanan di dashboard.
+     *
+     * Prioritas: parameter bulan -> bulan berjalan.
+     */
+    protected function resolveBulan(Request $request): string
+    {
+        $bulan = $request->string('bulan')->toString();
+
+        if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $bulan)) {
+            return $bulan;
+        }
+
+        return now()->format('Y-m');
     }
 }

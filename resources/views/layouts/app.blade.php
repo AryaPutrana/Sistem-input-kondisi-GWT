@@ -30,11 +30,23 @@
                         <a href="{{ route('lokasi.index') }}" class="nav-link">Lokasi Monitoring</a>
                     </li>
                     <li class="nav-item">
+                        <a href="{{ route('lokasiBulanan.index') }}" class="nav-link">Lokasi Bulanan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('keuangan.index') }}" class="nav-link">Laporan Bulanan</a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ route('pengguna.index') }}" class="nav-link">Kelola Pengguna</a>
                     </li>
                 @else
                     <li class="nav-item">
                         <a href="{{ route('monitoring.create') }}" class="nav-link">Input Monitoring</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('keuangan.create') }}" class="nav-link">Input Bulanan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('keuangan.riwayat') }}" class="nav-link">Riwayat Bulanan</a>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('monitoring.index') }}" class="nav-link">Histori Saya</a>

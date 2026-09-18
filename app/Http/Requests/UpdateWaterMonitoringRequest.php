@@ -18,7 +18,10 @@ class UpdateWaterMonitoringRequest extends StoreWaterMonitoringRequest
         return [
             'location_id' => [
                 'required',
-                Rule::exists('monitoring_locations', 'id')->where(fn ($query) => $query->where('status', 'aktif')),
+                Rule::exists('monitoring_locations', 'id')->where(function ($query) use ($monitoring) {
+                    $query->where('status', 'aktif')
+                        ->orWhere('id', $monitoring->location_id);
+                }),
                 Rule::unique('water_monitorings')->ignore($monitoring->id)->where(function ($query) {
                     return $query->where('tanggal', $this->tanggal)
                         ->where('sesi', $this->sesi);
