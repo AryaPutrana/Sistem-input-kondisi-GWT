@@ -152,7 +152,7 @@
     </div>
 
     <div class="footer">
-        Total data: {{ $total }} baris. Dicetak pada {{ now()->format('d/m/Y H:i') }}.
+         Dicetak pada {{ now()->format('d/m/Y H:i') }}.
     </div>
 
 </body>

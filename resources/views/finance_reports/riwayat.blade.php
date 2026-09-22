@@ -4,8 +4,8 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0 fw-bold">Riwayat Input Keuangan</h4>
-    <a href="{{ route('keuangan.create') }}" class="btn btn-primary">+ Input Keuangan</a>
+    <h4 class="mb-0 fw-bold">Riwayat Input Bulanan</h4>
+    <a href="{{ route('keuangan.create') }}" class="btn btn-primary">+ Input Bulanan</a>
 </div>
 
 <form method="GET" action="{{ route('keuangan.riwayat') }}" class="row g-2 align-items-end mb-3">

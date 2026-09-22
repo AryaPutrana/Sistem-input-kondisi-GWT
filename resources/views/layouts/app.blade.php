@@ -20,36 +20,41 @@
         <div class="collapse navbar-collapse" id="navbarMain">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a href="{{ route('dashboard') }}" class="nav-link">Dashboard</a>
+                    <a href="{{ route('dashboard') }}"
+                       class="nav-link{{ request()->routeIs('dashboard') ? ' active' : '' }}">Dashboard</a>
                 </li>
                 @if (Auth::user()->isAdmin())
-                    <li class="nav-item">
-                        <a href="{{ route('monitoring.index') }}" class="nav-link">Histori Monitoring</a>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Monitoring Harian</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('lokasi.index') }}">Lokasi Monitoring</a></li>
+                            <li><a class="dropdown-item" href="{{ route('monitoring.index') }}">Histori Monitoring</a></li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a href="{{ route('lokasi.index') }}" class="nav-link">Lokasi Monitoring</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('lokasiBulanan.index') }}" class="nav-link">Lokasi Bulanan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('keuangan.index') }}" class="nav-link">Laporan Bulanan</a>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Laporan Bulanan</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('lokasiBulanan.index') }}">Lokasi Bulanan</a></li>
+                            <li><a class="dropdown-item" href="{{ route('keuangan.index') }}">Laporan Bulanan</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('pengguna.index') }}" class="nav-link">Kelola Pengguna</a>
                     </li>
                 @else
-                    <li class="nav-item">
-                        <a href="{{ route('monitoring.create') }}" class="nav-link">Input Monitoring</a>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Monitoring Harian</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('monitoring.create') }}">Input Monitoring</a></li>
+                            <li><a class="dropdown-item" href="{{ route('monitoring.index') }}">Histori Monitoring</a></li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a href="{{ route('keuangan.create') }}" class="nav-link">Input Bulanan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('keuangan.riwayat') }}" class="nav-link">Riwayat Bulanan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('monitoring.index') }}" class="nav-link">Histori Saya</a>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Laporan Bulanan</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('keuangan.create') }}">Input Bulanan</a></li>
+                            <li><a class="dropdown-item" href="{{ route('keuangan.riwayat') }}">Riwayat Bulanan</a></li>
+                        </ul>
                     </li>
                 @endif
             </ul>
