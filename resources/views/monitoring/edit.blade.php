@@ -7,7 +7,7 @@
     <div class="col-md-7">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="mb-0 fw-bold">Edit Pemeriksaan Air</h4>
-            <a href="{{ route('dashboard') }}" class="text-decoration-none">&larr; Kembali</a>
+            <a href="{{ route('monitoring.index') }}" class="text-decoration-none">&larr; Kembali</a>
         </div>
 
         <div class="card shadow-sm">

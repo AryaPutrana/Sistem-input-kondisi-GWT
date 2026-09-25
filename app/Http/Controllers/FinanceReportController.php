@@ -35,7 +35,7 @@ class FinanceReportController extends Controller
             ->whereBetween('tanggal', [$from, $to])
             ->latest('tanggal')
             ->latest('id')
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         return view('finance_reports.index', [
@@ -223,7 +223,7 @@ class FinanceReportController extends Controller
             ->whereBetween('tanggal', [$from, $to])
             ->latest('tanggal')
             ->latest('id')
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         return view('finance_reports.riwayat', [
