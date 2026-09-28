@@ -114,7 +114,7 @@ class FinanceReportController extends Controller
         ]);
 
         return redirect()->route('keuangan.riwayat', ['bulan' => Carbon::parse($request->tanggal)->format('Y-m')])
-            ->with('success', 'Input keuangan berhasil disimpan.');
+            ->with('success', 'Input bulanan berhasil disimpan.');
     }
 
     /**

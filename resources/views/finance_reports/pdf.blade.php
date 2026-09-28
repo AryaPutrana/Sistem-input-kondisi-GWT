@@ -115,9 +115,9 @@
             <tr>
                 <th>No</th>
                 <th>Tanggal Input</th>
-                <th>Keterangan Dropdown</th>
+                <th>Kondisi Air</th>
                 <th>Lokasi</th>
-                <th>Keterangan Text Area</th>
+                <th>Keterangan</th>
                 <th>Foto</th>
             </tr>
         </thead>
