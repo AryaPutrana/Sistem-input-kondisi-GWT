@@ -8,6 +8,91 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        /* Animasi halus dropdown navbar (Monitoring Harian & Laporan Bulanan).
+           Fade dipasang pada .dropdown-menu, sedangkan slide dipasang pada
+           .dropdown-item supaya kotak submenu itu sendiri tidak ikut bergeser.
+           Di dalam navbar Bootstrap mematikan Popper (applyStyles: false) dan di
+           mode HP .navbar-nav .dropdown-menu menjadi position:static, sehingga
+           transform pada .dropdown-menu akan menggeser submenu yang sedang
+           mengalir di dalam layout. */
+        @keyframes navDropdownFade {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        @keyframes navRevealIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .navbar .dropdown-menu.show {
+            animation: navDropdownFade .28s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .navbar .dropdown-menu.show .dropdown-item {
+            animation: navRevealIn .28s cubic-bezier(.4, 0, .2, 1) backwards;
+        }
+
+        /* Mode HP (< 992px). Semua aturan di bawah hanya berlaku di mobile. */
+        @media (max-width: 991.98px) {
+            /* Di HP Bootstrap membuat .dropdown-menu menjadi position:static sehingga
+               submenu ikut mengalir di layout dan tinggi navbar melompat seketika.
+               Dipaksa display:block + max-height:0 agar bisa ditransisi.
+               visibility ikut transitioned supaya menu yang tertutup tidak bisa di-tab. */
+            .navbar .navbar-nav .dropdown-menu {
+                display: block;
+                max-height: 0;
+                overflow: hidden;
+                visibility: hidden;
+                margin-top: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+                transition: max-height .28s cubic-bezier(.4, 0, .2, 1),
+                            padding .28s cubic-bezier(.4, 0, .2, 1),
+                            visibility .28s;
+            }
+
+            .navbar .navbar-nav .dropdown-menu.show {
+                max-height: 20rem;
+                visibility: visible;
+                padding-top: .5rem;
+                padding-bottom: .5rem;
+            }
+
+            /* Kurva buka/tutup menu hamburger */
+            .navbar .collapsing {
+                transition: height .32s cubic-bezier(.4, 0, .2, 1);
+            }
+
+            /* Isi navbar ikut fade + slide saat menu dibuka */
+            .navbar .navbar-collapse.show > .navbar-nav,
+            .navbar .navbar-collapse.show > .d-flex {
+                animation: navRevealIn .28s cubic-bezier(.4, 0, .2, 1) backwards;
+            }
+
+            /* Ikon hamburger berubah menjadi tanda silang saat menu terbuka */
+            .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='white' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M6 6l18 18M24 6L6 24'/%3e%3c/svg%3e");
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .navbar .dropdown-menu.show,
+            .navbar .dropdown-menu.show .dropdown-item,
+            .navbar .navbar-collapse.show > .navbar-nav,
+            .navbar .navbar-collapse.show > .d-flex {
+                animation: none;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) and (max-width: 991.98px) {
+            .navbar .collapsing,
+            .navbar .navbar-nav .dropdown-menu {
+                transition: none;
+            }
+        }
+    </style>
     @stack('styles')
 </head>
 <body class="@yield('bodyClass', 'bg-light')">
@@ -16,7 +101,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container">
         <a href="{{ route('dashboard') }}" class="navbar-brand">Sistem Sarana dan Prasarana</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler order-first" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarMain">

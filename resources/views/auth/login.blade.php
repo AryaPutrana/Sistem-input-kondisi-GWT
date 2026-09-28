@@ -56,11 +56,95 @@
         width: 100%;
         height: 130px;
     }
+
+    .login-page .login-logos {
+        position: absolute;
+        top: 1.5rem;
+        right: 0;
+        left: 0;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0 1.5rem;
+    }
+
+    .login-page .login-logo-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .login-page .login-logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px;
+        line-height: 0;
+        background-color: #fff;
+        border-radius: 6px;
+    }
+
+    .login-page .login-logo img {
+        display: block;
+        width: auto;
+        height: 36px;
+    }
+
+    @media (max-width: 575.98px) {
+        .login-page .login-logos {
+            gap: 0.5rem;
+        }
+
+        .login-page .login-logo-group {
+            gap: 0.4rem;
+        }
+
+        .login-page .login-logo {
+            padding: 4px;
+        }
+
+        .login-page .login-logo img {
+            height: 28px;
+        }
+    }
+
+    @media (max-height: 700px) and (min-width: 576px) {
+        .login-page .login-logos {
+            top: 1rem;
+        }
+
+        .login-page .login-logo {
+            padding: 4px;
+        }
+
+        .login-page .login-logo img {
+            height: 30px;
+        }
+    }
 </style>
 @endpush
 
 @section('content')
 <div class="login-wrap">
+    <div class="login-logos">
+        <div class="login-logo-group">
+            <span class="login-logo">
+                <img src="{{ asset('images/logo/jaya-raya.png') }}" width="142" height="160"
+                     alt="Logo Jaya Raya" decoding="async">
+            </span>
+            <span class="login-logo">
+                <img src="{{ asset('images/logo/dprkp.png') }}" width="160" height="160"
+                     alt="Logo DPRKP" decoding="async">
+            </span>
+        </div>
+        <span class="login-logo">
+            <img src="{{ asset('images/logo/uprs-vi.png') }}" width="649" height="160"
+                 alt="Logo UPRS VI" decoding="async">
+        </span>
+    </div>
+
     <div class="card login-card mb-3">
         <div class="card-body p-4">
             <div class="text-center mb-4">
@@ -69,7 +153,7 @@
                     <i class="bi bi-droplet-fill fs-3"></i>
                 </span>
                 <h5 class="card-title fw-bold mb-1">Sistem Sarana dan Prasarana</h5>
-                <p class="text-muted small mb-0">Monitoring Kondisi Air GWT &amp; Kolam Air Bersih</p>
+                <p class="text-muted small mb-0">Monitoring Kondisi Air GWT Harian &amp; Bulanan</p>
             </div>
 
             <form method="POST" action="{{ route('login.attempt') }}">
