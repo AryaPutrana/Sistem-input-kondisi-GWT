@@ -5,8 +5,13 @@ namespace Tests\Feature;
 use App\Models\FinanceReport;
 use App\Models\User;
 use App\Models\WaterMonitoring;
+use App\Support\PhotoStorage;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\UnableToDeleteFile;
+use Mockery;
 use Tests\TestCase;
 
 class RehomeEvidenceTest extends TestCase
@@ -103,6 +108,81 @@ class RehomeEvidenceTest extends TestCase
         $this->assertSame('public', $monitoring->fresh()->foto_disk);
         Storage::disk('public')->assertExists('monitoring/bentrok.jpg');
         $this->assertSame('versi-baru', Storage::disk('evidence')->get('monitoring/bentrok.jpg'));
+    }
+
+    public function test_apply_reports_failure_when_public_file_cannot_be_deleted(): void
+    {
+        $monitoring = $this->makeLegacyMonitoring('monitoring/kunci.jpg', 'konten');
+        [$public, $evidence] = $this->breakPublicDiskDelete(throwInstead: false);
+
+        $this->artisan('evidence:rehome', ['--apply' => true])
+            ->expectsOutputToContain('masih terekspos')
+            ->assertFailed();
+
+        $this->assertSame('evidence', $monitoring->fresh()->foto_disk);
+        $evidence->assertExists('monitoring/kunci.jpg');
+        $public->assertExists('monitoring/kunci.jpg');
+    }
+
+    public function test_apply_reports_failure_when_public_disk_throws_on_delete(): void
+    {
+        $monitoring = $this->makeLegacyMonitoring('monitoring/kunci2.jpg', 'konten');
+        [$public, $evidence] = $this->breakPublicDiskDelete(throwInstead: true);
+
+        $this->artisan('evidence:rehome', ['--apply' => true])
+            ->expectsOutputToContain('masih terekspos')
+            ->assertFailed();
+
+        $this->assertSame('evidence', $monitoring->fresh()->foto_disk);
+        $evidence->assertExists('monitoring/kunci2.jpg');
+        $public->assertExists('monitoring/kunci2.jpg');
+    }
+
+    public function test_apply_stops_with_a_clear_message_when_migration_has_not_run(): void
+    {
+        $this->makeLegacyMonitoring('monitoring/belum.jpg', 'konten');
+
+        Schema::table('water_monitorings', function (Blueprint $table) {
+            $table->dropColumn('foto_disk');
+        });
+
+        $this->artisan('evidence:rehome', ['--apply' => true])
+            ->expectsOutputToContain('Kolom foto_disk belum ada di tabel water_monitorings')
+            ->expectsOutputToContain('php artisan migrate')
+            ->assertFailed();
+
+        Storage::disk('public')->assertExists('monitoring/belum.jpg');
+        Storage::disk('evidence')->assertMissing('monitoring/belum.jpg');
+    }
+
+    /**
+     * Ganti disk publik dengan tiruan yang delete()-nya selalu gagal.
+     *
+     * Cara ini dipakai agar cabang kegagalan benar-benar diuji tanpa
+     * bergantung pada perilaku sistem berkas. Melempar exception meniru disk
+     * yang dikonfigurasi 'throw' => true.
+     *
+     * @return array{0: \Illuminate\Contracts\Filesystem\Filesystem, 1: \Illuminate\Contracts\Filesystem\Filesystem}
+     */
+    protected function breakPublicDiskDelete(bool $throwInstead): array
+    {
+        $public = Storage::disk('public');
+        $evidence = Storage::disk('evidence');
+
+        $mock = Mockery::mock($public)->makePartial();
+
+        if ($throwInstead) {
+            $mock->shouldReceive('delete')
+                ->andThrow(UnableToDeleteFile::atLocation('monitoring/kunci.jpg', 'file terkunci'));
+        } else {
+            $mock->shouldReceive('delete')->andReturnFalse();
+        }
+
+        Storage::shouldReceive('disk')->andReturnUsing(
+            static fn (string $name) => $name === PhotoStorage::LEGACY_PUBLIC ? $mock : $evidence
+        );
+
+        return [$public, $evidence];
     }
 
     protected function makeLegacyMonitoring(string $path, ?string $content): WaterMonitoring

@@ -405,4 +405,54 @@ class PhotoPrivacyTest extends TestCase
         );
         $response->assertDontSee('/storage/', false);
     }
+
+    /*
+     |--------------------------------------------------------------------------
+     | 2.2 - destroy harus menghapus baris lebih dulu, baru file
+     |--------------------------------------------------------------------------
+     */
+
+    public function test_photo_survives_when_the_monitoring_row_cannot_be_deleted(): void
+    {
+        WaterMonitoring::deleting(function () {
+            throw new RuntimeException('simulasi kegagalan database');
+        });
+
+        $petugas = User::factory()->petugas()->create();
+        $monitoring = WaterMonitoring::factory()->create([
+            'user_id' => $petugas->id,
+            'foto' => 'monitoring/jaga.jpg',
+            'foto_disk' => 'evidence',
+        ]);
+        Storage::disk('evidence')->put('monitoring/jaga.jpg', 'konten-jaga');
+
+        $this->actingAs($petugas)
+            ->delete(route('monitoring.destroy', $monitoring))
+            ->assertStatus(500);
+
+        Storage::disk('evidence')->assertExists('monitoring/jaga.jpg');
+        $this->assertDatabaseHas('water_monitorings', ['id' => $monitoring->id]);
+    }
+
+    public function test_photo_survives_when_the_finance_row_cannot_be_deleted(): void
+    {
+        FinanceReport::deleting(function () {
+            throw new RuntimeException('simulasi kegagalan database');
+        });
+
+        $petugas = User::factory()->petugas()->create();
+        $report = FinanceReport::factory()->create([
+            'user_id' => $petugas->id,
+            'foto' => 'keuangan/jaga.jpg',
+            'foto_disk' => 'evidence',
+        ]);
+        Storage::disk('evidence')->put('keuangan/jaga.jpg', 'konten-jaga');
+
+        $this->actingAs($petugas)
+            ->delete(route('keuangan.destroy', $report))
+            ->assertStatus(500);
+
+        Storage::disk('evidence')->assertExists('keuangan/jaga.jpg');
+        $this->assertDatabaseHas('finance_reports', ['id' => $report->id]);
+    }
 }

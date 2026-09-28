@@ -239,9 +239,14 @@ class MonitoringController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menghapus data ini.');
         }
 
-        $monitoring->deleteFotoFile();
+        $fotoPath = $monitoring->fotoPath();
+        $diskFoto = $monitoring->fotoDisk();
 
         $monitoring->delete();
+
+        if ($fotoPath !== null) {
+            $diskFoto->delete($fotoPath);
+        }
 
         return back()->with('success', 'Data pemeriksaan berhasil dihapus.');
     }
