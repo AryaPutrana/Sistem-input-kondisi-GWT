@@ -120,7 +120,9 @@ class AuthController extends Controller
      */
     protected function throttleKey(Request $request): string
     {
-        return Str::lower($request->input('email')).'|'.$request->ip();
+        $email = $request->input('email');
+
+        return Str::lower(is_string($email) ? $email : '').'|'.$request->ip();
     }
 
     /**
