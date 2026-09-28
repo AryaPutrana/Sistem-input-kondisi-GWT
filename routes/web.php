@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\MonitoringController;
+use App\Http\Controllers\PhotoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -81,4 +82,11 @@ Route::middleware('auth')->group(function () {
     // admin dapat membuka semua data.
     Route::get('/monitoring/{monitoring}', [MonitoringController::class, 'show'])
         ->name('monitoring.show');
+
+    // Foto bukti tidak dilayani sebagai file statis. File dibaca dari disk
+    // privat oleh PhotoController yang memeriksa hak akses sebelum mengirim.
+    Route::get('/foto/pemeriksaan/{monitoring}', [PhotoController::class, 'monitoring'])
+        ->name('foto.monitoring');
+    Route::get('/foto/keuangan/{report}', [PhotoController::class, 'finance'])
+        ->name('foto.finance');
 });

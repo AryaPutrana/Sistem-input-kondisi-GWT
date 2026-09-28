@@ -35,7 +35,7 @@
         <div class="card shadow-sm h-100">
             <div class="card-body text-center">
                 @if ($monitoring->foto)
-                    <img src="{{ asset('storage/' . $monitoring->foto) }}"
+                    <img src="{{ route('foto.monitoring', $monitoring) }}"
                          alt="Foto pemeriksaan {{ $monitoring->location->nama_lokasi }}"
                          class="img-fluid rounded w-100">
                 @else

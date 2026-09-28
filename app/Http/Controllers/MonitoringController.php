@@ -6,12 +6,14 @@ use App\Http\Requests\StoreWaterMonitoringRequest;
 use App\Http\Requests\UpdateWaterMonitoringRequest;
 use App\Models\MonitoringLocation;
 use App\Models\WaterMonitoring;
+use App\Support\PhotoStorage;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Throwable;
 
 class MonitoringController extends Controller
 {
@@ -86,18 +88,25 @@ class MonitoringController extends Controller
      */
     public function store(StoreWaterMonitoringRequest $request): RedirectResponse
     {
-        $fotoPath = $request->file('foto')->store('monitoring', 'public');
+        $fotoPath = $request->file('foto')->store(PhotoStorage::DIR_MONITORING, PhotoStorage::EVIDENCE);
 
-        WaterMonitoring::create([
-            'user_id' => Auth::id(),
-            'location_id' => $request->location_id,
-            'tanggal' => $request->tanggal,
-            'sesi' => $request->sesi,
-            'waktu' => WaterMonitoring::SESI_WAKTU[$request->sesi],
-            'kondisi' => $request->kondisi,
-            'keterangan' => $request->keterangan,
-            'foto' => $fotoPath,
-        ]);
+        try {
+            WaterMonitoring::create([
+                'user_id' => Auth::id(),
+                'location_id' => $request->location_id,
+                'tanggal' => $request->tanggal,
+                'sesi' => $request->sesi,
+                'waktu' => WaterMonitoring::SESI_WAKTU[$request->sesi],
+                'kondisi' => $request->kondisi,
+                'keterangan' => $request->keterangan,
+                'foto' => $fotoPath,
+                'foto_disk' => PhotoStorage::EVIDENCE,
+            ]);
+        } catch (Throwable $exception) {
+            Storage::disk(PhotoStorage::EVIDENCE)->delete($fotoPath);
+
+            throw $exception;
+        }
 
         if ($request->kondisi !== 'normal') {
             $label = WaterMonitoring::KONDISI[$request->kondisi];
@@ -158,15 +167,30 @@ class MonitoringController extends Controller
             'keterangan' => $request->keterangan,
         ];
 
-        if ($request->hasFile('foto')) {
-            $data['foto'] = $request->file('foto')->store('monitoring', 'public');
+        $fotoLama = $monitoring->foto;
+        $diskLama = $monitoring->fotoDiskName();
+        $fotoBaru = null;
 
-            if ($monitoring->foto) {
-                Storage::disk('public')->delete($monitoring->foto);
-            }
+        if ($request->hasFile('foto')) {
+            $fotoBaru = $request->file('foto')->store(PhotoStorage::DIR_MONITORING, PhotoStorage::EVIDENCE);
+
+            $data['foto'] = $fotoBaru;
+            $data['foto_disk'] = PhotoStorage::EVIDENCE;
         }
 
-        $monitoring->update($data);
+        try {
+            $monitoring->update($data);
+        } catch (Throwable $exception) {
+            if ($fotoBaru !== null) {
+                Storage::disk(PhotoStorage::EVIDENCE)->delete($fotoBaru);
+            }
+
+            throw $exception;
+        }
+
+        if ($fotoBaru !== null && $fotoLama !== null && $fotoLama !== $fotoBaru) {
+            Storage::disk($diskLama)->delete($fotoLama);
+        }
 
         if ($monitoring->kondisi !== 'normal') {
             $label = WaterMonitoring::KONDISI[$monitoring->kondisi];
@@ -215,9 +239,7 @@ class MonitoringController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menghapus data ini.');
         }
 
-        if ($monitoring->foto) {
-            Storage::disk('public')->delete($monitoring->foto);
-        }
+        $monitoring->deleteFotoFile();
 
         $monitoring->delete();
 

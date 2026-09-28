@@ -44,6 +44,23 @@ return [
             'throw' => false,
         ],
 
+        /*
+         | Disk privat untuk foto bukti pemeriksaan dan keuangan.
+         |
+         | Sengaja TIDAK berada di dalam storage/app/public supaya tidak
+         | pernah ikut dilayani lewat symlink public/storage. Akses hanya
+         | melalui route PhotoController yang memverifikasi hak akses.
+         | Karena tidak memakai symlink, driver local di bawah ini tidak
+         | memerlukan setelan visibility private agar tidak bisa dibaca
+         | lewat HTTP.
+         */
+        'evidence' => [
+            'driver' => 'local',
+            'root' => storage_path('app/evidence'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

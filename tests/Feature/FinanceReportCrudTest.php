@@ -17,6 +17,7 @@ class FinanceReportCrudTest extends TestCase
     public function test_petugas_can_store_finance_report(): void
     {
         Storage::fake('public');
+        Storage::fake('evidence');
 
         $petugas = User::factory()->petugas()->create();
         $location = FinanceLocation::factory()->create();
@@ -39,8 +40,10 @@ class FinanceReportCrudTest extends TestCase
             'user_id' => $petugas->id,
             'location_id' => $location->id,
             'kondisi' => 'normal',
+            'foto_disk' => 'evidence',
         ]);
-        Storage::disk('public')->assertExists($record->foto);
+        Storage::disk('evidence')->assertExists($record->foto);
+        Storage::disk('public')->assertMissing($record->foto);
     }
 
     public function test_foto_is_required(): void

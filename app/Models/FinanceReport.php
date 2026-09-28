@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasEvidencePhoto;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FinanceReport extends Model
 {
+    use HasEvidencePhoto;
     use HasFactory;
 
     public const KONDISI = [
@@ -28,6 +30,7 @@ class FinanceReport extends Model
         'kondisi',
         'keterangan',
         'foto',
+        'foto_disk',
     ];
 
     /**

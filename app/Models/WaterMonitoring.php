@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasEvidencePhoto;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Support\Carbon;
 
 class WaterMonitoring extends Model
 {
+    use HasEvidencePhoto;
     use HasFactory;
 
     public const KONDISI = [
@@ -50,6 +52,7 @@ class WaterMonitoring extends Model
         'kondisi',
         'keterangan',
         'foto',
+        'foto_disk',
     ];
 
     /**

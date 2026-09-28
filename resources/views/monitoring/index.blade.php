@@ -71,7 +71,7 @@
                         <td>
                             <button type="button" class="btn btn-sm btn-outline-primary"
                                     data-bs-toggle="modal" data-bs-target="#fotoModal"
-                                    data-foto-src="{{ asset('storage/' . $wm->foto) }}">
+                                    data-foto-src="{{ route('foto.monitoring', $wm) }}">
                                 Lihat
                             </button>
                         </td>

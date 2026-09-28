@@ -17,6 +17,7 @@ class MonitoringCrudTest extends TestCase
     public function test_petugas_can_store_monitoring(): void
     {
         Storage::fake('public');
+        Storage::fake('evidence');
 
         $petugas = User::factory()->petugas()->create();
         $location = MonitoringLocation::factory()->create();
@@ -42,8 +43,10 @@ class MonitoringCrudTest extends TestCase
             'sesi' => 'pagi',
             'waktu' => '08:00:00',
             'kondisi' => 'normal',
+            'foto_disk' => 'evidence',
         ]);
-        Storage::disk('public')->assertExists($record->foto);
+        Storage::disk('evidence')->assertExists($record->foto);
+        Storage::disk('public')->assertMissing($record->foto);
     }
 
     public function test_foto_is_required(): void

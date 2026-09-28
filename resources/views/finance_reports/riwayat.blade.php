@@ -57,7 +57,7 @@
                         <td>
                             <button type="button" class="btn btn-sm btn-outline-primary"
                                     data-bs-toggle="modal" data-bs-target="#fotoModal"
-                                    data-foto-src="{{ asset('storage/' . $report->foto) }}">
+                                    data-foto-src="{{ route('foto.finance', $report) }}">
                                 Lihat
                             </button>
                         </td>

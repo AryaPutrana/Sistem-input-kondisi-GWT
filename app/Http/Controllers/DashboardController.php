@@ -41,7 +41,11 @@ class DashboardController extends Controller
         $base = WaterMonitoring::query()
             ->when(! $user->isAdmin(), fn ($query) => $query->where('user_id', $user->id));
 
-        $monitorings = (clone $base)->latest('tanggal')->latest('waktu');
+        $monitorings = (clone $base)
+            ->with(['user', 'location'])
+            ->latest('tanggal')
+            ->latest('waktu')
+            ->latest('id');
 
         $rangeBase = (clone $base)->whereBetween('tanggal', [$dari, $sampai]);
 

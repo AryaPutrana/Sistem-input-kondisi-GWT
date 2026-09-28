@@ -6,6 +6,7 @@ use App\Http\Requests\StoreFinanceReportRequest;
 use App\Http\Requests\UpdateFinanceReportRequest;
 use App\Models\FinanceLocation;
 use App\Models\FinanceReport;
+use App\Support\PhotoStorage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +16,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Throwable;
 
 class FinanceReportController extends Controller
 {
@@ -73,7 +75,7 @@ class FinanceReportController extends Controller
             'kondisi' => FinanceReport::KONDISI[$report->kondisi] ?? ucfirst($report->kondisi),
             'lokasi' => $report->location?->nama_lokasi ?? '—',
             'keterangan' => $report->keterangan,
-            'foto_src' => $this->fotoToDataUri($report->foto),
+            'foto_src' => $this->fotoToDataUri($report),
         ]);
 
         $pdf = Pdf::loadView('finance_reports.pdf', [
@@ -102,16 +104,23 @@ class FinanceReportController extends Controller
      */
     public function store(StoreFinanceReportRequest $request): RedirectResponse
     {
-        $fotoPath = $request->file('foto')->store('keuangan', 'public');
+        $fotoPath = $request->file('foto')->store(PhotoStorage::DIR_FINANCE, PhotoStorage::EVIDENCE);
 
-        FinanceReport::create([
-            'user_id' => Auth::id(),
-            'location_id' => $request->location_id,
-            'tanggal' => $request->tanggal,
-            'kondisi' => $request->kondisi,
-            'keterangan' => $request->keterangan,
-            'foto' => $fotoPath,
-        ]);
+        try {
+            FinanceReport::create([
+                'user_id' => Auth::id(),
+                'location_id' => $request->location_id,
+                'tanggal' => $request->tanggal,
+                'kondisi' => $request->kondisi,
+                'keterangan' => $request->keterangan,
+                'foto' => $fotoPath,
+                'foto_disk' => PhotoStorage::EVIDENCE,
+            ]);
+        } catch (Throwable $exception) {
+            Storage::disk(PhotoStorage::EVIDENCE)->delete($fotoPath);
+
+            throw $exception;
+        }
 
         return redirect()->route('keuangan.riwayat', ['bulan' => Carbon::parse($request->tanggal)->format('Y-m')])
             ->with('success', 'Input bulanan berhasil disimpan.');
@@ -160,15 +169,30 @@ class FinanceReportController extends Controller
             'keterangan' => $request->keterangan,
         ];
 
-        if ($request->hasFile('foto')) {
-            $data['foto'] = $request->file('foto')->store('keuangan', 'public');
+        $fotoLama = $report->foto;
+        $diskLama = $report->fotoDiskName();
+        $fotoBaru = null;
 
-            if ($report->foto) {
-                Storage::disk('public')->delete($report->foto);
-            }
+        if ($request->hasFile('foto')) {
+            $fotoBaru = $request->file('foto')->store(PhotoStorage::DIR_FINANCE, PhotoStorage::EVIDENCE);
+
+            $data['foto'] = $fotoBaru;
+            $data['foto_disk'] = PhotoStorage::EVIDENCE;
         }
 
-        $report->update($data);
+        try {
+            $report->update($data);
+        } catch (Throwable $exception) {
+            if ($fotoBaru !== null) {
+                Storage::disk(PhotoStorage::EVIDENCE)->delete($fotoBaru);
+            }
+
+            throw $exception;
+        }
+
+        if ($fotoBaru !== null && $fotoLama !== null && $fotoLama !== $fotoBaru) {
+            Storage::disk($diskLama)->delete($fotoLama);
+        }
 
         $bulan = Carbon::parse($request->tanggal)->format('Y-m');
 
@@ -196,9 +220,7 @@ class FinanceReportController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menghapus data ini.');
         }
 
-        if ($report->foto) {
-            Storage::disk('public')->delete($report->foto);
-        }
+        $report->deleteFotoFile();
 
         $report->delete();
 
@@ -309,30 +331,30 @@ class FinanceReportController extends Controller
     }
 
     /**
-     * Ubah file foto di storage public menjadi data URI untuk di-embed di PDF.
+     * Ubah file foto di storage menjadi data URI untuk di-embed di PDF.
      *
-     * Mengembalikan null bila path kosong atau file tidak ditemukan.
+     * File dibaca dari disk sesuai kolom foto_disk, sehingga foto lama di
+     * disk publik maupun foto baru di disk privat sama-sama terbaca.
+     * Mengembalikan null bila path kosong, tidak aman, atau file hilang.
      */
-    protected function fotoToDataUri(?string $path): ?string
+    protected function fotoToDataUri(?FinanceReport $report): ?string
     {
-        if (! $path) {
+        if ($report === null) {
             return null;
         }
 
-        $disk = Storage::disk('public');
+        $path = $report->fotoPath();
+
+        if ($path === null) {
+            return null;
+        }
+
+        $disk = $report->fotoDisk();
 
         if (! $disk->exists($path)) {
             return null;
         }
 
-        $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
-            'png' => 'image/png',
-            'webp' => 'image/webp',
-            'gif' => 'image/gif',
-            'bmp' => 'image/bmp',
-            default => 'image/jpeg',
-        };
-
-        return 'data:'.$mime.';base64,'.base64_encode($disk->get($path));
+        return 'data:'.PhotoStorage::mimeFor($path, 'image/jpeg').';base64,'.base64_encode($disk->get($path));
     }
 }

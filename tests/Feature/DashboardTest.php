@@ -6,6 +6,8 @@ use App\Models\FinanceLocation;
 use App\Models\FinanceReport;
 use App\Models\MonitoringLocation;
 use App\Models\User;
+use App\Models\WaterMonitoring;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -86,5 +88,55 @@ class DashboardTest extends TestCase
         $response->assertOk();
         $response->assertSee('butuh perhatian');
         $response->assertSee('Debit Turun');
+    }
+
+    /**
+     * Regression test untuk N+1 di dashboard.
+     *
+     * preventLazyLoading() membuat Eloquent melempar exception begitu
+     * relasi diakses tanpa eager loading. Karena view dashboard memakai
+     * $recent->user->name dan $recent->location->nama_lokasi, test ini
+     * akan gagal bila query 'recent' kembali tanpa with(['user','location']).
+     */
+    public function test_dashboard_does_not_lazy_load_relations(): void
+    {
+        Model::preventLazyLoading(true);
+
+        try {
+            $admin = User::factory()->admin()->create();
+            $petugas = User::factory()->petugas()->create();
+            $lokasi = MonitoringLocation::factory()->count(4)->create();
+            $financeLocation = FinanceLocation::factory()->create();
+
+            $sesiList = ['pagi', 'siang', 'sore'];
+
+            foreach ($lokasi as $i => $loc) {
+                foreach ($sesiList as $sesi) {
+                    WaterMonitoring::factory()->create([
+                        'user_id' => $petugas->id,
+                        'location_id' => $loc->id,
+                        'tanggal' => now()->subDays($i)->toDateString(),
+                        'sesi' => $sesi,
+                        'waktu' => WaterMonitoring::SESI_WAKTU[$sesi],
+                        'kondisi' => 'debit_turun',
+                    ]);
+                }
+            }
+
+            foreach ($sesiList as $index => $unused) {
+                FinanceReport::factory()->create([
+                    'user_id' => $petugas->id,
+                    'location_id' => $financeLocation->id,
+                    'tanggal' => now()->subDays($index)->toDateString(),
+                ]);
+            }
+
+            $response = $this->actingAs($admin)->get(route('dashboard'));
+
+            $response->assertOk();
+            $this->assertCount(10, $response->viewData('recent'));
+        } finally {
+            Model::preventLazyLoading(false);
+        }
     }
 }
