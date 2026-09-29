@@ -33,6 +33,9 @@ trait HasEvidencePhoto
 
     /**
      * Apakah file foto benar-benar ada di disk yang sesuai.
+     *
+     * Kegagalan pemeriksaan dianggap "tidak ada" supaya tidak berubah
+     * menjadi error 500 pada halaman yang hanya menampilkan foto.
      */
     public function fotoExists(): bool
     {
@@ -42,11 +45,13 @@ trait HasEvidencePhoto
             return false;
         }
 
-        return $this->fotoDisk()->exists($path);
+        return PhotoStorage::existsQuietly($this->fotoDisk(), $path);
     }
 
     /**
      * Hapus file foto bila ada. Aman dipanggil berkali-kali.
+     *
+     * Best-effort: kegagalan tidak dilempar.
      */
     public function deleteFotoFile(): bool
     {
@@ -58,10 +63,10 @@ trait HasEvidencePhoto
 
         $disk = $this->fotoDisk();
 
-        if (! $disk->exists($path)) {
+        if (! PhotoStorage::existsQuietly($disk, $path)) {
             return false;
         }
 
-        return $disk->delete($path);
+        return PhotoStorage::deleteQuietly($disk, $path);
     }
 }

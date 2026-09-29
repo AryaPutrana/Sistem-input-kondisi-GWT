@@ -7,6 +7,7 @@ use App\Models\WaterMonitoring;
 use App\Support\PhotoStorage;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class PhotoController extends Controller
 {
@@ -52,6 +53,14 @@ class PhotoController extends Controller
 
     /**
      * Kirim file foto ke browser dengan Content-Type yang dikunci.
+     *
+     * Pemeriksaan keberadaan file dan pengiriman file tidak bisa dilakukan
+     * sebagai satu operasi atomik: foto bisa terhapus di antara keduanya,
+     * misalnya karena petugas menghapus recordnya sendiri di tab lain
+     * pada saat yang sama. BinaryFileResponse melempar FileNotFoundException
+     * untuk kondisi itu, jadi tanpa penanganan tambahan pengguna akan
+     * melihat halaman error 500 padahal penyebab sebenarnya cuma file
+     * yang memang sudah tidak ada.
      */
     protected function stream(WaterMonitoring|FinanceReport $record): BinaryFileResponse
     {
@@ -63,15 +72,25 @@ class PhotoController extends Controller
 
         $disk = $record->fotoDisk();
 
-        if (! $disk->exists($path)) {
+        if (! PhotoStorage::existsQuietly($disk, $path)) {
             abort(404, 'Foto tidak ditemukan.');
         }
 
-        return response()->file($disk->path($path), [
-            'Content-Type' => PhotoStorage::mimeFor($path),
-            'Content-Disposition' => 'inline; filename="'.addslashes(basename($path)).'"',
-            'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => 'private, max-age=3600',
-        ]);
+        $localPath = PhotoStorage::localPath($disk, $path);
+
+        if ($localPath === null) {
+            abort(404, 'Foto tidak ditemukan.');
+        }
+
+        try {
+            return response()->file($localPath, [
+                'Content-Type' => PhotoStorage::mimeFor($path),
+                'Content-Disposition' => 'inline; filename="'.addslashes(basename($path)).'"',
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'private, max-age=3600',
+            ]);
+        } catch (FileException) {
+            abort(404, 'Foto tidak ditemukan.');
+        }
     }
 }

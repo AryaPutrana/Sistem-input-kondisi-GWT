@@ -5,8 +5,12 @@ namespace Tests\Feature;
 use App\Http\Controllers\FinanceReportController;
 use App\Models\FinanceReport;
 use App\Models\User;
+use App\Support\PhotoStorage;
+use Illuminate\Contracts\Filesystem\Factory as FilesystemFactoryContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\UnableToReadFile;
+use Mockery;
 use ReflectionMethod;
 use Tests\TestCase;
 
@@ -103,6 +107,48 @@ class FinanceReportPdfTest extends TestCase
         ]);
 
         $this->assertNull($this->fotoToDataUri($report));
+    }
+
+    public function test_data_uri_is_null_when_file_exists_but_cannot_be_read(): void
+    {
+        // exists() bilang file ada, tapi get() gagal — misalnya karena
+        // permission file berubah sementara permission direktorinya tidak.
+        // Pasangan exists() lalu get() akan melempar di sini dan menggagalkan
+        // seluruh unduhan PDF, bukan hanya foto yang bermasalah.
+        $report = FinanceReport::factory()->create([
+            'foto' => 'keuangan/tidak-terbaca.jpg',
+            'foto_disk' => 'evidence',
+        ]);
+
+        $this->mockUnreadablePhoto('keuangan/tidak-terbaca.jpg');
+
+        $this->assertNull($this->fotoToDataUri($report));
+    }
+
+    public function test_pdf_is_still_valid_when_one_photo_cannot_be_read(): void
+    {
+        Storage::disk('evidence')->put('keuangan/nyata.jpg', $this->jpegBytes());
+        Storage::disk('evidence')->put('keuangan/rusak.jpg', $this->jpegBytes());
+
+        FinanceReport::factory()->create([
+            'tanggal' => '2026-09-10',
+            'foto' => 'keuangan/nyata.jpg',
+            'foto_disk' => 'evidence',
+        ]);
+        FinanceReport::factory()->create([
+            'tanggal' => '2026-09-11',
+            'foto' => 'keuangan/rusak.jpg',
+            'foto_disk' => 'evidence',
+        ]);
+
+        $this->mockUnreadablePhoto('keuangan/rusak.jpg');
+
+        $response = $this->actingAs($this->admin())->get(
+            route('keuangan.pdf', ['bulan' => '2026-09'])
+        );
+
+        $response->assertOk();
+        $this->assertStringStartsWith('%PDF', $this->pdfBody($response));
     }
 
     /*
@@ -235,6 +281,39 @@ class FinanceReportPdfTest extends TestCase
         $method->setAccessible(true);
 
         return $method->invoke($controller, $report);
+    }
+
+    /**
+     * Buat file tertentu terlihat ada tapi tidak bisa dibaca.
+     *
+     * exists() dan get() sengaja dibedakan: fileExists() pada driver lokal
+     * hanya memanggil is_file() sehingga tidak pernah melempar, sedangkan
+     * read() melempar UnableToReadFile saat file_get_contents() gagal. Dua
+     * kondisi itu yang harus bisa ditangani tanpa menggagalkan PDF.
+     */
+    protected function mockUnreadablePhoto(string $path): void
+    {
+        $manager = app('filesystem');
+        $evidence = Storage::disk('evidence');
+        $mock = Mockery::mock($evidence)->makePartial();
+
+        $mock->shouldReceive('exists')->andReturnTrue();
+        $mock->shouldReceive('get')->andReturnUsing(
+            static function (string $requested) use ($evidence) {
+                if (str_contains($requested, 'tidak-terbaca') || str_contains($requested, 'rusak')) {
+                    throw UnableToReadFile::fromLocation($requested, 'permission denied');
+                }
+
+                return $evidence->get($requested);
+            }
+        );
+
+        $factory = Mockery::mock(FilesystemFactoryContract::class);
+        $factory->shouldReceive('disk')->andReturnUsing(
+            static fn ($name = null) => $name === PhotoStorage::EVIDENCE ? $mock : $manager->disk($name)
+        );
+
+        Storage::swap($factory);
     }
 
     protected function jpegBytes(int $width = 400, int $height = 300): string

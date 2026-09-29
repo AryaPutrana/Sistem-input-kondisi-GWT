@@ -88,7 +88,17 @@ class MonitoringController extends Controller
      */
     public function store(StoreWaterMonitoringRequest $request): RedirectResponse
     {
-        $fotoPath = $request->file('foto')->store(PhotoStorage::DIR_MONITORING, PhotoStorage::EVIDENCE);
+        // Kegagalan menulis file ditangani di dalam storeUploaded() dan
+        // diterjemahkan menjadi respons ramah. Penting untuk pengecekan
+        // dilakukan SEBELUM menyentuh database: kalau file tidak bisa
+        // ditulis, tidak ada record yang boleh dibuat sama sekali.
+        $fotoPath = PhotoStorage::storeUploaded($request->file('foto'), PhotoStorage::DIR_MONITORING);
+
+        if ($fotoPath === null) {
+            return back()
+                ->withInput()
+                ->with('error', PhotoStorage::MESSAGE_GAGAL_SIMPAN);
+        }
 
         try {
             WaterMonitoring::create([
@@ -103,7 +113,7 @@ class MonitoringController extends Controller
                 'foto_disk' => PhotoStorage::EVIDENCE,
             ]);
         } catch (Throwable $exception) {
-            Storage::disk(PhotoStorage::EVIDENCE)->delete($fotoPath);
+            PhotoStorage::deleteQuietly(Storage::disk(PhotoStorage::EVIDENCE), $fotoPath);
 
             throw $exception;
         }
@@ -172,7 +182,17 @@ class MonitoringController extends Controller
         $fotoBaru = null;
 
         if ($request->hasFile('foto')) {
-            $fotoBaru = $request->file('foto')->store(PhotoStorage::DIR_MONITORING, PhotoStorage::EVIDENCE);
+            // Kalau foto baru gagal ditulis, kembalikan respons lebih dulu
+            // tanpa menyentuh record. Foto lama pada database maupun di
+            // disk karena itu tetap utuh dan tidak ada file baru yang
+            // menggantung.
+            $fotoBaru = PhotoStorage::storeUploaded($request->file('foto'), PhotoStorage::DIR_MONITORING);
+
+            if ($fotoBaru === null) {
+                return back()
+                    ->withInput()
+                    ->with('error', PhotoStorage::MESSAGE_GAGAL_SIMPAN);
+            }
 
             $data['foto'] = $fotoBaru;
             $data['foto_disk'] = PhotoStorage::EVIDENCE;
@@ -182,14 +202,14 @@ class MonitoringController extends Controller
             $monitoring->update($data);
         } catch (Throwable $exception) {
             if ($fotoBaru !== null) {
-                Storage::disk(PhotoStorage::EVIDENCE)->delete($fotoBaru);
+                PhotoStorage::deleteQuietly(Storage::disk(PhotoStorage::EVIDENCE), $fotoBaru);
             }
 
             throw $exception;
         }
 
         if ($fotoBaru !== null && $fotoLama !== null && $fotoLama !== $fotoBaru) {
-            Storage::disk($diskLama)->delete($fotoLama);
+            PhotoStorage::deleteQuietly(Storage::disk($diskLama), $fotoLama);
         }
 
         if ($monitoring->kondisi !== 'normal') {
@@ -239,14 +259,14 @@ class MonitoringController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menghapus data ini.');
         }
 
-        $fotoPath = $monitoring->fotoPath();
-        $diskFoto = $monitoring->fotoDisk();
-
+        // Baris database dihapus lebih dulu, baru file-nya. Urutan ini
+        // disengaja: bila penghapusan file gagal, pengguna tetap melihat
+        // datanya sudah hilang, bukan halaman error. Pola yang sama
+        // berlaku di FinanceReportController::destroy(). Foto dihapus
+        // lewat deleteFotoFile() supaya penentuan disk dan peniadaan
+        // path traversal tidak ditulis ulang di sini.
         $monitoring->delete();
-
-        if ($fotoPath !== null) {
-            $diskFoto->delete($fotoPath);
-        }
+        $monitoring->deleteFotoFile();
 
         return back()->with('success', 'Data pemeriksaan berhasil dihapus.');
     }

@@ -77,7 +77,11 @@
                         @enderror
                     </div>
 
-                    @if ($report->foto)
+                    {{-- Pengecekan dilakukan pada file yang benar-benar ada,
+                         bukan hanya pada isi kolom foto. Foto yang hilang di
+                         disk tidak lagi ditampilkan sebagai gambar rusak
+                         saat membuka form edit. --}}
+                    @if ($report->fotoExists())
                         <div class="mb-3">
                             <label class="form-label">Foto Saat Ini</label>
                             <div>

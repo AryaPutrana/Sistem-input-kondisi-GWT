@@ -34,7 +34,10 @@
     <div class="col-lg-7">
         <div class="card shadow-sm h-100">
             <div class="card-body text-center">
-                @if ($monitoring->foto)
+                {{-- Dicek pada file yang benar-benar ada, bukan hanya pada isi
+                     kolom foto, supaya foto yang hilang di disk tidak muncul
+                     sebagai gambar rusak. --}}
+                @if ($monitoring->fotoExists())
                     <img src="{{ route('foto.monitoring', $monitoring) }}"
                          alt="Foto pemeriksaan {{ $monitoring->location->nama_lokasi }}"
                          class="img-fluid rounded w-100">

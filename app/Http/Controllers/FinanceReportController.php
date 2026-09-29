@@ -104,7 +104,17 @@ class FinanceReportController extends Controller
      */
     public function store(StoreFinanceReportRequest $request): RedirectResponse
     {
-        $fotoPath = $request->file('foto')->store(PhotoStorage::DIR_FINANCE, PhotoStorage::EVIDENCE);
+        // Kegagalan menulis file ditangani di dalam storeUploaded() dan
+        // diterjemahkan menjadi respons ramah. Penting untuk pengecekan
+        // dilakukan SEBELUM menyentuh database: kalau file tidak bisa
+        // ditulis, tidak ada record yang boleh dibuat sama sekali.
+        $fotoPath = PhotoStorage::storeUploaded($request->file('foto'), PhotoStorage::DIR_FINANCE);
+
+        if ($fotoPath === null) {
+            return back()
+                ->withInput()
+                ->with('error', PhotoStorage::MESSAGE_GAGAL_SIMPAN);
+        }
 
         try {
             FinanceReport::create([
@@ -117,7 +127,7 @@ class FinanceReportController extends Controller
                 'foto_disk' => PhotoStorage::EVIDENCE,
             ]);
         } catch (Throwable $exception) {
-            Storage::disk(PhotoStorage::EVIDENCE)->delete($fotoPath);
+            PhotoStorage::deleteQuietly(Storage::disk(PhotoStorage::EVIDENCE), $fotoPath);
 
             throw $exception;
         }
@@ -174,7 +184,17 @@ class FinanceReportController extends Controller
         $fotoBaru = null;
 
         if ($request->hasFile('foto')) {
-            $fotoBaru = $request->file('foto')->store(PhotoStorage::DIR_FINANCE, PhotoStorage::EVIDENCE);
+            // Kalau foto baru gagal ditulis, kembalikan respons lebih dulu
+            // tanpa menyentuh record. Foto lama pada database maupun di
+            // disk karena itu tetap utuh dan tidak ada file baru yang
+            // menggantung.
+            $fotoBaru = PhotoStorage::storeUploaded($request->file('foto'), PhotoStorage::DIR_FINANCE);
+
+            if ($fotoBaru === null) {
+                return back()
+                    ->withInput()
+                    ->with('error', PhotoStorage::MESSAGE_GAGAL_SIMPAN);
+            }
 
             $data['foto'] = $fotoBaru;
             $data['foto_disk'] = PhotoStorage::EVIDENCE;
@@ -184,14 +204,14 @@ class FinanceReportController extends Controller
             $report->update($data);
         } catch (Throwable $exception) {
             if ($fotoBaru !== null) {
-                Storage::disk(PhotoStorage::EVIDENCE)->delete($fotoBaru);
+                PhotoStorage::deleteQuietly(Storage::disk(PhotoStorage::EVIDENCE), $fotoBaru);
             }
 
             throw $exception;
         }
 
         if ($fotoBaru !== null && $fotoLama !== null && $fotoLama !== $fotoBaru) {
-            Storage::disk($diskLama)->delete($fotoLama);
+            PhotoStorage::deleteQuietly(Storage::disk($diskLama), $fotoLama);
         }
 
         $bulan = Carbon::parse($request->tanggal)->format('Y-m');
@@ -220,14 +240,15 @@ class FinanceReportController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menghapus data ini.');
         }
 
-        $fotoPath = $report->fotoPath();
-        $diskFoto = $report->fotoDisk();
-
+        // Baris database sudah terhapus, jadi deleteFotoFile() hanya
+        // operasi pembersihan sisa file. Kegagalan tidak dilempar agar
+        // pengguna tidak melihat halaman 500 padahal hapus datanya
+        // sendiri sudah berhasil. Pola ini sama dengan
+        // MonitoringController::destroy(). Foto dihapus lewat
+        // deleteFotoFile() supaya penentuan disk dan peniadaan path
+        // traversal tidak ditulis ulang di sini.
         $report->delete();
-
-        if ($fotoPath !== null) {
-            $diskFoto->delete($fotoPath);
-        }
+        $report->deleteFotoFile();
 
         return back()->with('success', 'Data input keuangan berhasil dihapus.');
     }
@@ -341,6 +362,13 @@ class FinanceReportController extends Controller
      * File dibaca dari disk sesuai kolom foto_disk, sehingga foto lama di
      * disk publik maupun foto baru di disk privat sama-sama terbaca.
      * Mengembalikan null bila path kosong, tidak aman, atau file hilang.
+     *
+     * Isi file diambil dengan satu panggilan getQuietly(), bukan dengan
+     * exists() diikuti get(). Pasangan itu menyentuh disk dua kali dan
+     * menyisakan celah: file yang hilang di antara keduanya membuat get()
+     * melempar dan menggagalkan seluruh unduhan PDF bulan itu, bukan
+     * hanya satu foto. Foto yang tidak terbaca karena permission pun
+     * hanya menghilangkan satu baris foto, bukan seluruh laporan.
      */
     protected function fotoToDataUri(?FinanceReport $report): ?string
     {
@@ -354,12 +382,12 @@ class FinanceReportController extends Controller
             return null;
         }
 
-        $disk = $report->fotoDisk();
+        $isi = PhotoStorage::getQuietly($report->fotoDisk(), $path);
 
-        if (! $disk->exists($path)) {
+        if ($isi === null || $isi === '') {
             return null;
         }
 
-        return 'data:'.PhotoStorage::mimeFor($path, 'image/jpeg').';base64,'.base64_encode($disk->get($path));
+        return 'data:'.PhotoStorage::mimeFor($path, 'image/jpeg').';base64,'.base64_encode($isi);
     }
 }

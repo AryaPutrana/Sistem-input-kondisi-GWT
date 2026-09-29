@@ -53,12 +53,24 @@ return [
          | Karena tidak memakai symlink, driver local di bawah ini tidak
          | memerlukan setelan visibility private agar tidak bisa dibaca
          | lewat HTTP.
+         |
+         | 'throw' => true WAJIB dipertahankan. Tanpa ini, put()/delete()
+         | hanya mengembalikan false secara diam-diam saat disk penuh atau
+         | folder tidak writable. Pemanggil yang memeriksa nilai balik
+         | boolean bisa salah menganggap file sudah tersimpan, lalu
+         | menghapus file aslinya. Dengan throw, kegagalan jadi exception
+         | yang bisa ditangkap.
+         |
+         | Karena itu setiap pemanggil yang hanya butuh-operasi terbaik
+         | (best effort) WAJIB membungkus pemanggilannya dengan
+         | PhotoStorage::deleteQuietly() atau PhotoStorage::existsQuietly()
+         | supaya exception tidak sampai bocor ke user.
          */
         'evidence' => [
             'driver' => 'local',
             'root' => storage_path('app/evidence'),
             'visibility' => 'private',
-            'throw' => false,
+            'throw' => true,
         ],
 
         's3' => [
